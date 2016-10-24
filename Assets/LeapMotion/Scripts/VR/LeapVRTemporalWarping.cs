@@ -61,7 +61,7 @@ namespace Leap.Unity {
     // Spatial recalibration
     [Tooltip("Key to recenter the VR tracking space.")]
     [SerializeField]
-    private KeyCode recenter = KeyCode.R;
+    private KeyCode recenter = KeyCode.Escape;
 
     [Tooltip("Allows smooth enabling or disabling of the Image-Warping feature.  Usually should match rotation warping.")]
     [Range(0, 1)]
@@ -289,9 +289,9 @@ namespace Leap.Unity {
         _shouldSetLocalPosition = false;
       }
 
-      if (Input.GetKeyDown(recenter) && VRSettings.enabled && VRDevice.isPresent) {
-        InputTracking.Recenter();
-      }
+      //if (Input.GetKeyDown(recenter) && VRSettings.enabled && VRDevice.isPresent) {
+      //  InputTracking.Recenter();
+      //}
 
       // Manual Time Alignment
       if (allowManualTimeAlignment) {

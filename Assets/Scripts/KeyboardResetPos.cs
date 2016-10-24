@@ -25,15 +25,26 @@ public class KeyboardResetPos : MonoBehaviour
     {
 
 
-        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.KeypadEnter))
+        if (Input.GetKey(KeyCode.BackQuote) && Input.GetKeyDown(KeyCode.KeypadMinus))
         {
             leftIndexTip = rigidIndexL.GetTipPosition();
             rightIndexTip = rigidIndexR.GetTipPosition();
             Vector3 middlePos = (rightIndexTip + leftIndexTip) / 2;
+            middlePos += new Vector3(0.42f, 0.19f,- 0.03600f);
             print(leftIndexTip + " : " + rightIndexTip + " ; " + middlePos);
-            middlePos += new Vector3(0.5f, 0.1f, 0);
 
+            float fingerDist = Vector3.Distance(leftIndexTip, rightIndexTip);
+            fingerDist -= .15f;
+            fingerDist = .226f;
+            keyboard.transform.localScale = new Vector3(fingerDist+.02f, fingerDist, fingerDist);
+
+            Vector3 targetDir = leftIndexTip - rightIndexTip;
+            float keyboardAngle = Vector3.Angle(targetDir, transform.forward);
+
+           //middlePos.y = -0.23f;
             keyboard.transform.position = middlePos;
+            
+            keyboard.transform.eulerAngles = new Vector3(0, -(keyboardAngle - 90), 0);
             //GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             //cube.transform.localScale = new Vector3(.05f, .05f, .05f);
             //cube.transform.position = middlePos;
