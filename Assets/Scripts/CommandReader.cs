@@ -7,15 +7,18 @@ public class CommandReader : MonoBehaviour
     public TextMesh outText;
     public string outputText = "";
     public AICharacterControl aiControl;
+    public NavMeshAgent navAgent;
     private GameObject aiTarget;
     private int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
-    private float speed = 0.5f;
+    private float aiSpeed = 2.0f;
+    private float aiTurnSpeed = 1.0f;
 
     // Use this for initialization
     void Start()
     {
         aiTarget = new GameObject();
         aiControl = GameObject.FindGameObjectWithTag("AI").GetComponent<AICharacterControl>();
+        navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
     }
 
     // Update is called once per frame
@@ -41,6 +44,14 @@ public class CommandReader : MonoBehaviour
         {
             stop();
         }
+        else if (moveState == 6)
+        {
+            turnLeft();
+        }
+        else if (moveState == 7)
+        {
+            turnRight();
+        }
     }
 
     public void input(string rawInput)
@@ -54,25 +65,33 @@ public class CommandReader : MonoBehaviour
             outText.text = outputText;
         }
 
-        if (rawInput == "move.left")
+        if (rawInput == "move.back")
         {
             moveState = 1;
         }
-        else if (rawInput == "move.right")
+        else if (rawInput == "move.forward")
         {
             moveState = 2;
         }
-        else if (rawInput == "move.forward")
+        else if (rawInput == "move.left")
         {
             moveState = 3;
         }
-        else if (rawInput == "move.back")
+        else if (rawInput == "move.right")
         {
             moveState = 4;
         }
         else if (rawInput == "stop")
         {
             moveState = 5;
+        }
+        else if (rawInput == "turn.left")
+        {
+            moveState = 6;
+        }
+        else if (rawInput == "turn.right")
+        {
+            moveState = 7;
         }
 
         else if (rawInput == "light")
@@ -97,30 +116,46 @@ public class CommandReader : MonoBehaviour
 
     private void stop()
     {
-        aiControl.target = aiControl.transform;
+        navAgent.enabled = false;
     }
 
     private void moveLeft()
     {
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(-speed, 0, 0);
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(-aiSpeed, 0, 0);
         aiControl.target = aiTarget.transform;
     }
 
     private void moveRight()
     {
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(speed, 0, 0);
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(aiSpeed, 0, 0);
         aiControl.target = aiTarget.transform;
     }
 
     private void moveForward()
     {
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, speed);
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, aiSpeed);
         aiControl.target = aiTarget.transform;
     }
 
     private void moveBack()
     {
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, -speed);
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, -aiSpeed);
         aiControl.target = aiTarget.transform;
+    }
+
+     private void turnLeft()
+    {
+        navAgent.enabled = false;
+        aiControl.transform.Rotate(0,-aiTurnSpeed,0);
+    }
+
+    private void turnRight()
+    {
+        navAgent.enabled = false;
+        aiControl.transform.Rotate(0,aiTurnSpeed,0);
     }
 }
