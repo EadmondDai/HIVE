@@ -9,6 +9,7 @@ public class CommandReader : MonoBehaviour
     public AICharacterControl aiControl;
     private GameObject aiTarget;
     private int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
+    private float speed = 0.5f;
 
     // Use this for initialization
     void Start()
@@ -101,25 +102,25 @@ public class CommandReader : MonoBehaviour
 
     private void moveLeft()
     {
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(-1, 0, 0);
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(-speed, 0, 0);
         aiControl.target = aiTarget.transform;
     }
 
     private void moveRight()
     {
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(1, 0, 0);
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(speed, 0, 0);
         aiControl.target = aiTarget.transform;
     }
 
     private void moveForward()
     {
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, 1);
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, speed);
         aiControl.target = aiTarget.transform;
     }
 
     private void moveBack()
     {
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, -1);
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, -speed);
         aiControl.target = aiTarget.transform;
     }
 }
