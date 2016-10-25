@@ -127,11 +127,14 @@ public class CommandReader : MonoBehaviour
         else if (rawInput == "raycast")
         {
             Vector3 hit = ray.shootRay(mainCam.GetComponent<Camera>());
-            if (hit != Vector3.zero)
-            {
-                GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                cube.transform.position = hit;
-            }
+            outputText = outputText.Insert(outputText.Length, "\n\nraycast = " + hit);
+            outText.text = outputText;
+
+            //if (hit != Vector3.zero)
+            //{
+            //    GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            //    cube.transform.position = hit;
+            //}
             print(hit);
         }
 

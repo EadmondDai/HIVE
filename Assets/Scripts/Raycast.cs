@@ -17,7 +17,7 @@ public class Raycast : MonoBehaviour
 		// Vector3 hitpoint = shootRay(GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>());
 		// GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
   //       cube.transform.position = hitpoint;
-		  Vector3 forward = mainCamera.transform.TransformDirection(Vector3.forward) * 10;
+		  Vector3 forward = mainCamera.transform.TransformDirection(Vector3.forward) * 50;
         Debug.DrawRay(mainCamera.transform.position, forward, Color.green);
 	}
 
