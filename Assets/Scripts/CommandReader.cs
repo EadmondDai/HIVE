@@ -9,9 +9,12 @@ public class CommandReader : MonoBehaviour
     public AICharacterControl aiControl;
     public NavMeshAgent navAgent;
     private GameObject aiTarget;
+    private GameObject camView;
+    private GameObject mainCam;
     private int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
     private float aiSpeed = 2.0f;
     private float aiTurnSpeed = 1.0f;
+    private bool firstPerson = true;
 
     // Use this for initialization
     void Start()
@@ -19,11 +22,23 @@ public class CommandReader : MonoBehaviour
         aiTarget = new GameObject();
         aiControl = GameObject.FindGameObjectWithTag("AI").GetComponent<AICharacterControl>();
         navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
+        camView = GameObject.FindGameObjectWithTag("ComputerScreen");
+        mainCam = GameObject.FindGameObjectWithTag("MainCamera");
     }
 
     // Update is called once per frame
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Tab))
+       {
+            camView.active = !camView.active;
+
+            if (firstPerson == true)
+            {
+                mainCam.active = !mainCam.active;
+            }
+        }
+
         if (moveState == 1)
         {
             moveLeft();
@@ -116,6 +131,7 @@ public class CommandReader : MonoBehaviour
 
     private void stop()
     {
+        aiControl.target = aiControl.transform;
         navAgent.enabled = false;
     }
 
@@ -147,15 +163,15 @@ public class CommandReader : MonoBehaviour
         aiControl.target = aiTarget.transform;
     }
 
-     private void turnLeft()
+    private void turnLeft()
     {
         navAgent.enabled = false;
-        aiControl.transform.Rotate(0,-aiTurnSpeed,0);
+        aiControl.transform.Rotate(0, -aiTurnSpeed, 0);
     }
 
     private void turnRight()
     {
         navAgent.enabled = false;
-        aiControl.transform.Rotate(0,aiTurnSpeed,0);
+        aiControl.transform.Rotate(0, aiTurnSpeed, 0);
     }
 }

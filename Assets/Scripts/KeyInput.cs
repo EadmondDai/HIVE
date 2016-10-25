@@ -410,7 +410,7 @@ public class KeyInput : MonoBehaviour {
 			float currentY = Tab.transform.localPosition.y;
 			float newY = currentY - down;
 			Tab.transform.localPosition = new Vector3(Tab.transform.localPosition.x,newY,Tab.transform.localPosition.z);
-				text = text + "/t";
+				//text = text + "/t";
 		}
 		else if (Input.GetKeyUp(KeyCode.Tab))
 		{
