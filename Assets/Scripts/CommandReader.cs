@@ -7,6 +7,7 @@ public class CommandReader : MonoBehaviour
     public TextMesh outText;
     public string outputText = "";
     public AICharacterControl aiControl;
+    public Raycast ray;
     public NavMeshAgent navAgent;
     private GameObject aiTarget;
     private GameObject camView;
@@ -14,7 +15,7 @@ public class CommandReader : MonoBehaviour
     private int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
     private float aiSpeed = 2.0f;
     private float aiTurnSpeed = 1.0f;
-    private bool firstPerson = true;
+    public bool firstPerson = true;
 
     // Use this for initialization
     void Start()
@@ -24,6 +25,7 @@ public class CommandReader : MonoBehaviour
         navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
         camView = GameObject.FindGameObjectWithTag("ComputerScreen");
         mainCam = GameObject.FindGameObjectWithTag("MainCamera");
+        ray = GetComponent<Raycast>();
     }
 
     // Update is called once per frame
@@ -120,6 +122,17 @@ public class CommandReader : MonoBehaviour
         {
             outputText = outputText.Insert(outputText.Length, "\n\nexit");
             outText.text = outputText;
+        }
+
+        else if (rawInput == "raycast")
+        {
+            Vector3 hit = ray.shootRay(mainCam.GetComponent<Camera>());
+            if (hit != Vector3.zero)
+            {
+                GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cube.transform.position = hit;
+            }
+            print(hit);
         }
 
         else
