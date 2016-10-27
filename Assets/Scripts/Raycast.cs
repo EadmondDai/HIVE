@@ -3,12 +3,16 @@ using System.Collections;
 
 public class Raycast : MonoBehaviour 
 {
-
+	private GameObject laser;
+	float boundY = 52;
+	float boundX = 30;
+	public Camera camToFollow;
 	//private Camera mainCamera;
 	// Use this for initialization
 	void Start () 
 	{
-		//mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
+
+		camToFollow = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
 	}
 	
 	// Update is called once per frame
@@ -34,9 +38,42 @@ public class Raycast : MonoBehaviour
 		return hit;
 	}
 
-    public RaycastHit shootSlaveRay(Camera mainCamera, Vector3 angle)
+    public RaycastHit shootSlaveRay(Camera mainCamera, float percentZ, float percentY)
     {
-        Vector3 fwd = mainCamera.transform.GetChild(0).TransformDirection(Vector3.forward);
+    	laser = mainCamera.transform.GetChild(0).gameObject;
+        Vector3 fwd = laser.transform.TransformDirection(Vector3.forward);
+
+        float xSubtrac = 0;
+
+        if (percentZ < 0)
+        {
+        	if (percentY < 0)
+        	{
+        		xSubtrac = 10 * percentZ ;
+        	}
+        	else
+        	{
+        		xSubtrac = 10 * -percentZ;
+        	}
+        }
+
+         if (percentZ > 0)
+        {
+        	if (percentY < 0)
+        	{
+        		xSubtrac = 10 * -percentZ;
+        	}
+
+        	else
+        	{
+        		xSubtrac = 10 * percentZ;
+        	}
+        	print(xSubtrac);
+        }
+
+        laser.transform.localPosition = new Vector3((percentZ * 2), (percentY * 2), 0);
+        //laser.transform.localRotation = camToFollow.transform.localRotation * Quaternion.Euler(-45,0,0);
+        laser.transform.rotation = Quaternion.Euler((percentY * -boundX) + xSubtrac, percentZ * boundY, 0);
         //print(mainCamera.transform.TransformDirection(Vector3.forward));
         //fwd += angle;
         //print(angle);

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+//using System;
 using UnityStandardAssets.Characters.ThirdPerson;
 
 public class CommandReader : MonoBehaviour
@@ -25,6 +26,20 @@ public class CommandReader : MonoBehaviour
     private int stage = 0;      //when hack into peple, stage = 1
     private Vector3 referencePoint;
 
+    // Raycast screen variables
+    float zPosBound = -0.662f;
+    float zNegBound = 1.0717f;
+    float yPosBound = -0.764567f;
+    float yNegBound = -1.458765f;
+    float zHalfWidth;// = 2(zPosBound + 3);
+    float yHalfWidth;
+    float zPoint;
+    float yPoint;
+    float percentY;
+    float percentZ;
+    float midpointY;
+    float midpointZ;
+
     // Sound variables
     public AudioSource laserAudio;
     public AudioClip laserSound;
@@ -46,6 +61,14 @@ public class CommandReader : MonoBehaviour
         // Initialize sound variables
         laserAudio = mainCam.GetComponent<AudioSource>();
         laserSound = (AudioClip)Resources.Load("Sounds/LaserBeep");
+
+        zHalfWidth =  System.Math.Abs((zPosBound - zNegBound)/2);
+        yHalfWidth =  System.Math.Abs((yPosBound - yNegBound)/2);
+        midpointZ = zPosBound + zHalfWidth;
+        midpointY = yNegBound + yHalfWidth;
+
+        //print(midpointZ);
+        //print(midpointY);
     }
 
     // Update is called once per frame
@@ -56,17 +79,45 @@ public class CommandReader : MonoBehaviour
         float dist = Vector3.Distance(mainCam.transform.position, hit.point);
         dist = dist / 150;
 
-        if (hit.collider.gameObject.name == "ScreenRender")
+        if (hit.collider.gameObject.name == "ScreenTV")
         {
             //float angle = Vector3.Angle(hit.point, referencePoint);
-            Vector3 angle = referencePoint - hit.point;
+            //Vector3 angle = referencePoint - hit.point;
             //angle.x = angle.z;
             //angle.x = 0;
-            angle.y = -angle.y;
-            print(referencePoint + " : " + hit.point + " : " + (referencePoint - hit.point));
+            //angle.y = -angle.y;
+            //print(hit.point);
+            
+            // Z is on the left
+            zPoint = hit.point.z;
+            //print(hit.point.y);
+            yPoint = hit.point.y;
+           // print(zPoint);
 
+            if (zPoint > midpointZ)
+            {  // print(zPoint - midpointZ);
+                percentZ = -(System.Math.Abs(zPoint - midpointZ)/zHalfWidth);
+            }
+            // Z is on the right
+            if (zPoint < midpointZ)
+            {    
+                percentZ = (System.Math.Abs(midpointZ - zPoint)/zHalfWidth);
+            }
+            // Y is on the right
+            if (yPoint > midpointY)
+            {    
+                percentY = (System.Math.Abs(yPoint - midpointY)/yHalfWidth);
+            }
+            // Z is on the left
+            if (yPoint < midpointY)
+            {    
+                percentY = -(System.Math.Abs(midpointY-yPoint)/yHalfWidth);
+            }
 
-            hit = ray.shootSlaveRay(slaveCam, angle);
+           // print(midpointZ);
+           // print(percentY + " : " + percentZ);
+
+            hit = ray.shootSlaveRay(slaveCam, percentZ, percentY);
             dist = Vector3.Distance(slaveCam.transform.position, hit.point);
             dist = dist / 100;
         }
