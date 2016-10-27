@@ -13,6 +13,10 @@ public class KeyInput : MonoBehaviour {
 	public bool shift = false; 
 
 	public string text;
+
+	public string[] priorInput = {"Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ"};
+
+	public int index = 0;
 	//public string convertedText;
 
 	public int lines = 0;
@@ -98,7 +102,7 @@ public class KeyInput : MonoBehaviour {
 	public GameObject Six;
 	public GameObject Up;
 	public GameObject Two;
-	public GameObject Dwn;
+	public GameObject Down;
 	public GameObject Three;
 	public GameObject Zero;
 	public GameObject PeriodNPad;
@@ -134,7 +138,7 @@ public class KeyInput : MonoBehaviour {
        if  (Input.anyKeyDown)
             {
                 typingAudio.pitch = Random.Range(1.0f - pitchRandomness, 1.0f + pitchRandomness);
-            typingAudio.PlayOneShot(typingSound);
+                typingAudio.PlayOneShot(typingSound);
             }
 
 
@@ -410,7 +414,7 @@ public class KeyInput : MonoBehaviour {
 			float currentY = Tab.transform.localPosition.y;
 			float newY = currentY - down;
 			Tab.transform.localPosition = new Vector3(Tab.transform.localPosition.x,newY,Tab.transform.localPosition.z);
-				text = text + "/t";
+				//text = text + "/t";
 		}
 		else if (Input.GetKeyUp(KeyCode.Tab))
 		{
@@ -1383,21 +1387,21 @@ Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x,0,Caps
 			PeriodNPad.transform.localPosition = new Vector3(PeriodNPad.transform.localPosition.x,0,PeriodNPad.transform.localPosition.z);
 		}
 //-------------------------------------------------------------------
-		if (Input.GetKeyDown(KeyCode.KeypadPlus))
-		{
-			float currentY = Up.transform.localPosition.y;
-			float newY = currentY - down;
-			Up.transform.localPosition = new Vector3(Up.transform.localPosition.x,newY,Up.transform.localPosition.z);
-			currentY = Dwn.transform.localPosition.y;
-			newY = currentY - down;
-			Dwn.transform.localPosition = new Vector3(Dwn.transform.localPosition.x,newY, Dwn.transform.localPosition.z);
-			text = text + "/";
-		}
-		else if (Input.GetKeyUp(KeyCode.KeypadPlus))
-		{
-			Up.transform.localPosition = new Vector3(Up.transform.localPosition.x,0,Up.transform.localPosition.z);
-			Dwn.transform.localPosition = new Vector3(Dwn.transform.localPosition.x,0, Dwn.transform.localPosition.z);
-		}
+		// if (Input.GetKeyDown(KeyCode.KeypadPlus))
+		// {
+		// 	float currentY = Up.transform.localPosition.y;
+		// 	float newY = currentY - down;
+		// 	Up.transform.localPosition = new Vector3(Up.transform.localPosition.x,newY,Up.transform.localPosition.z);
+		// 	currentY = Dwn.transform.localPosition.y;
+		// 	newY = currentY - down;
+		// 	Dwn.transform.localPosition = new Vector3(Dwn.transform.localPosition.x,newY, Dwn.transform.localPosition.z);
+		// 	text = text + "/";
+		// }
+		// else if (Input.GetKeyUp(KeyCode.KeypadPlus))
+		// {
+		// 	Up.transform.localPosition = new Vector3(Up.transform.localPosition.x,0,Up.transform.localPosition.z);
+		// 	Dwn.transform.localPosition = new Vector3(Dwn.transform.localPosition.x,0, Dwn.transform.localPosition.z);
+		// }
 //-------------------------------------------------------------------
 		if (Input.GetKeyDown(KeyCode.KeypadEnter))
 		{
@@ -1424,6 +1428,36 @@ Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x,0,Caps
 		{
 			Space.transform.localPosition = new Vector3(Space.transform.localPosition.x,0,Space.transform.localPosition.z);
 		}
+
+//-------------------------------------------------------------------
+		if (Input.GetKeyDown(KeyCode.UpArrow))
+		{
+			// float currentY = Up.transform.localPosition.y;
+			// float newY = currentY - down;
+			// Up.transform.localPosition = new Vector3(Up.transform.localPosition.x,newY,Up.transform.localPosition.z);
+			//text = text + " ";
+			prevInput();
+		}
+		else if (Input.GetKeyUp(KeyCode.UpArrow))
+		{
+			// Up.transform.localPosition = new Vector3(Up.transform.localPosition.x,0,Up.transform.localPosition.z);
+		}
+
+//-------------------------------------------------------------------
+		if (Input.GetKeyDown(KeyCode.DownArrow))
+		{
+			// float currentY = Down.transform.localPosition.y;
+			// float newY = currentY - down;
+			// Down.transform.localPosition = new Vector3(Down.transform.localPosition.x,newY,Down.transform.localPosition.z);
+			//text = text + " ";
+			nextInput();
+		}
+		else if (Input.GetKeyUp(KeyCode.DownArrow))
+		{
+			//Down.transform.localPosition = new Vector3(Down.transform.localPosition.x,0,Down.transform.localPosition.z);
+		}
+
+
         //-------------------------------------------------------------------
 
         // Line space effect
@@ -1462,20 +1496,59 @@ Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x,0,Caps
     // Function which clears input line, puts it in old line, and sends command to the script which reads commands
     void execute()
     {
-        //if (outputText == "")
-        //    outputText = text;
-        //else
-        //{
-        //    //priorText;
-        //    outputText = outputText.Insert(outputText.Length, "\n");
-        //    outputText += text;
-        //}
-        //print(outputText);
-        //outText.text = outputText;
 
         command.input(text);
         screenText.transform.position = new Vector3(startPosText.x, startPosText.y, startPosText.z);
-        text = "";
+        
+    if (text != "")
+    {
+    for (index = 9; index > 0; index--)
+    {
+        	priorInput[index] = priorInput[index-1];
+     }
+        	priorInput[0] = text;
+        	index = -1;
+
+        	print(priorInput[0] +  " " + priorInput[1] +  " " + priorInput[2] +  " " + priorInput[3] +  " " + priorInput[4] +  " " + priorInput[5] +  " " + priorInput[6] +  " " + priorInput[7] +  " " + priorInput[8] +  " " + priorInput[9] +  " ");
+      }
+       text = "";
+    }
+
+    void nextInput()
+    {
+    	print("next");
+    	// If we're not at at the end
+    	
+    	if (index == 0)
+    	{
+    		index = -1;
+    		text = "";
+    	}
+
+    	if (index > -1)
+    	{
+    		index--;
+    		while((priorInput[index] == "Ұ" || priorInput[index] == "") && index > 0)
+    		{
+    			index--;
+    		}
+    		if(priorInput[index] != "Ұ" && priorInput[index] != "Ұ")
+    		{
+    			text = priorInput[index];
+    			//textMesh.text = text;
+    		}
+    	}
+    }
+
+    void prevInput()
+    {
+    	print("prior");
+    	if ((index+1) < priorInput.Length && (priorInput[index+1] != "Ұ" && priorInput[index+1] != ""))
+    	{
+    			index++;
+    			text = priorInput[index];
+    			//textMesh.text = text;
+    	}
     }
 
 }
