@@ -5,8 +5,10 @@ using UnityStandardAssets.Characters.ThirdPerson;
 
 public class CommandReader : MonoBehaviour
 {
+    public GameObject[] NPCs;
     public TextMesh outText;
     public string outputText = "";
+    public RenderTexture rendTex;
     public AICharacterControl aiControl;
     public Raycast ray;
     public NavMeshAgent navAgent;
@@ -19,7 +21,7 @@ public class CommandReader : MonoBehaviour
     private int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
     private float aiSpeed = 2.0f;
     private float startTime;
-    private float aiTurnSpeed = 1.0f;
+    private float aiTurnSpeed = 0.5f;
     public bool firstPerson = true;
     public bool raycasting = false;
     private string username;
@@ -47,16 +49,17 @@ public class CommandReader : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        NPCs = GameObject.FindGameObjectsWithTag("AI");
         aiTarget = new GameObject();
-        aiControl = GameObject.FindGameObjectWithTag("AI").GetComponent<AICharacterControl>();
-        navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
+        //aiControl = GameObject.FindGameObjectWithTag("AI").GetComponent<AICharacterControl>();
+        //navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
         camView = GameObject.FindGameObjectWithTag("ComputerScreen");
         mainCam = GameObject.FindGameObjectWithTag("MainCamera");
         ray = GetComponent<Raycast>();
         rayCube = GameObject.FindGameObjectWithTag("RayCube");
         referencePoint = GameObject.FindGameObjectWithTag("ScreenReference").transform.position;
 
-        slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
+        //slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
 
         // Initialize sound variables
         laserAudio = mainCam.GetComponent<AudioSource>();
@@ -66,6 +69,11 @@ public class CommandReader : MonoBehaviour
         yHalfWidth =  System.Math.Abs((yPosBound - yNegBound)/2);
         midpointZ = zPosBound + zHalfWidth;
         midpointY = yNegBound + yHalfWidth;
+
+        camView.active = false;
+
+        outputText = outputText.Insert(outputText.Length, "\nType HELP for instructions");
+        outText.text = outputText;
 
         //print(midpointZ);
         //print(midpointY);
@@ -79,48 +87,48 @@ public class CommandReader : MonoBehaviour
         float dist = Vector3.Distance(mainCam.transform.position, hit.point);
         dist = dist / 150;
 
-        if (hit.collider.gameObject.name == "ScreenTV")
-        {
-            //float angle = Vector3.Angle(hit.point, referencePoint);
-            //Vector3 angle = referencePoint - hit.point;
-            //angle.x = angle.z;
-            //angle.x = 0;
-            //angle.y = -angle.y;
-            //print(hit.point);
+        //if (hit.collider.gameObject.name == "ScreenTV")
+        //{
+        //    //float angle = Vector3.Angle(hit.point, referencePoint);
+        //    //Vector3 angle = referencePoint - hit.point;
+        //    //angle.x = angle.z;
+        //    //angle.x = 0;
+        //    //angle.y = -angle.y;
+        //    //print(hit.point);
             
-            // Z is on the left
-            zPoint = hit.point.z;
-            //print(hit.point.y);
-            yPoint = hit.point.y;
-           // print(zPoint);
+        //    // Z is on the left
+        //    zPoint = hit.point.z;
+        //    //print(hit.point.y);
+        //    yPoint = hit.point.y;
+        //   // print(zPoint);
 
-            if (zPoint > midpointZ)
-            {  // print(zPoint - midpointZ);
-                percentZ = -(System.Math.Abs(zPoint - midpointZ)/zHalfWidth);
-            }
-            // Z is on the right
-            if (zPoint < midpointZ)
-            {    
-                percentZ = (System.Math.Abs(midpointZ - zPoint)/zHalfWidth);
-            }
-            // Y is on the right
-            if (yPoint > midpointY)
-            {    
-                percentY = (System.Math.Abs(yPoint - midpointY)/yHalfWidth);
-            }
-            // Z is on the left
-            if (yPoint < midpointY)
-            {    
-                percentY = -(System.Math.Abs(midpointY-yPoint)/yHalfWidth);
-            }
+        //    if (zPoint > midpointZ)
+        //    {  // print(zPoint - midpointZ);
+        //        percentZ = -(System.Math.Abs(zPoint - midpointZ)/zHalfWidth);
+        //    }
+        //    // Z is on the right
+        //    if (zPoint < midpointZ)
+        //    {    
+        //        percentZ = (System.Math.Abs(midpointZ - zPoint)/zHalfWidth);
+        //    }
+        //    // Y is on the right
+        //    if (yPoint > midpointY)
+        //    {    
+        //        percentY = (System.Math.Abs(yPoint - midpointY)/yHalfWidth);
+        //    }
+        //    // Z is on the left
+        //    if (yPoint < midpointY)
+        //    {    
+        //        percentY = -(System.Math.Abs(midpointY-yPoint)/yHalfWidth);
+        //    }
 
-           // print(midpointZ);
-           // print(percentY + " : " + percentZ);
+        //   // print(midpointZ);
+        //   // print(percentY + " : " + percentZ);
 
-            hit = ray.shootSlaveRay(slaveCam, percentZ, percentY);
-            dist = Vector3.Distance(slaveCam.transform.position, hit.point);
-            dist = dist / 100;
-        }
+        //    hit = ray.shootSlaveRay(slaveCam, percentZ, percentY);
+        //    dist = Vector3.Distance(slaveCam.transform.position, hit.point);
+        //    dist = dist / 100;
+        //}
         rayCube.transform.localScale = new Vector3(dist,dist,dist);
         rayCube.transform.position = hit.point;
         rayRend = rayCube.GetComponent<Renderer>();
@@ -152,19 +160,19 @@ public class CommandReader : MonoBehaviour
 
         if (moveState == 1)
         {
-            moveLeft();
+            moveNorth();
         }
         else if (moveState == 2)
         {
-            moveRight();
+            moveSouth();
         }
         else if (moveState == 3)
         {
-            moveForward();
+            moveWest();
         }
         else if (moveState == 4)
         {
-            moveBack();
+            moveEast();
         }
         else if (moveState == 5)
         {
@@ -178,6 +186,22 @@ public class CommandReader : MonoBehaviour
         {
             turnRight();
         }
+        else if (moveState == 8)
+        {
+            moveForward();
+        }
+        //else if (moveState == 9)
+        //{
+        //    moveBack();
+        //}
+        //else if (moveState == 10)
+        //{
+        //    moveLeft();
+        //}
+        //else if (moveState == 11)
+        //{
+        //    moveRight();
+        //}
     }
 
     public string getUsername()
@@ -185,14 +209,16 @@ public class CommandReader : MonoBehaviour
         return username;
     }
 
-    public bool matchName(string rawInput)
+    public GameObject matchName(string rawInput)
     {
-        if (rawInput == "jack" || rawInput == "tom")
-        {
-            return true;
+        GameObject str1;
+        for (int i = 0; i < NPCs.Length; i++) {
+            if(rawInput == NPCs[i].name.ToLower())
+            {
+                return NPCs[i];
+            }
         }
-        else
-            return false;
+        return null;
     }
 
     public void input(string rawInput)
@@ -203,10 +229,11 @@ public class CommandReader : MonoBehaviour
         string[] words = rawInput.ToLower().Split(delimiterChars);
         string cameraCommand = "turn  Rotate the player\n";
         string tabKey = "tab(key)  Switch view\n";
+        string raycastCommand = "raycast  Give info on what you're looking at\n";
 
 
 
-            if (stage == 0)
+        if (stage == 0)
             {
 
                 if (words[0] == "raycast")
@@ -224,7 +251,7 @@ public class CommandReader : MonoBehaviour
                 {
                     string hackCommand = "hack  hack the person\n";
 
-                    outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + cameraCommand + tabKey);
+                    outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + cameraCommand + tabKey + raycastCommand);
                     outText.text = outputText;
                 }
 
@@ -276,10 +303,19 @@ public class CommandReader : MonoBehaviour
 
                     else if (words.Length == 2)
                     {
-                        if (matchName(words[1]))
+                        GameObject npc;
+                    npc = matchName(words[1]);
+                        if (npc != null)
                         {
                             username = words[1];
                             stage = 1;
+                            aiControl = npc.GetComponent<AICharacterControl>();
+                            slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
+                            slaveCam.enabled = true;
+                            camView.active = true;
+                            navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
+                            
+
                         }
 
                         else
@@ -341,7 +377,7 @@ public class CommandReader : MonoBehaviour
                 {
                     if (words.Length == 1)
                     {
-                        outputText = outputText.Insert(outputText.Length, "\n\n" + "move.north\n" + "move.south\n" + "move.west\n" + "move.east\n" + "stop\n");
+                        outputText = outputText.Insert(outputText.Length, "\n\n" + "move.north\n" + "move.south\n" + "move.west\n" + "move.east\n" + "move.forward\n" + "stop\n");
                         outText.text = outputText;
                     }
                     else if (words.Length == 2)
@@ -366,7 +402,27 @@ public class CommandReader : MonoBehaviour
                             moveState = 4;
                         }
 
-                        else
+                        else if (words[1] == "forward")
+                        {
+                            moveState = 8;
+                        }
+
+                        //else if (words[1] == "back")
+                        //{
+                        //    moveState = 9;
+                        //}
+
+                        //else if (words[1] == "left")
+                        //{
+                        //    moveState = 10;
+                        //}
+
+                        //else if (words[1] == "right")
+                        //{
+                        //    moveState = 11;
+                        //}
+
+                    else
                         {
                             outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                             outText.text = outputText;
@@ -424,46 +480,83 @@ public class CommandReader : MonoBehaviour
 private void stop()
     {
         aiControl.target = aiControl.transform;
-        navAgent.enabled = false;
+        //navAgent.enabled = false;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX;
     }
 
-    private void moveLeft()
+    private void moveNorth()
     {
-        navAgent.enabled = true;
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(-aiSpeed, 0, 0);
-        aiControl.target = aiTarget.transform;
-    }
-
-    private void moveRight()
-    {
-        navAgent.enabled = true;
-        aiTarget.transform.position = aiControl.transform.position + new Vector3(aiSpeed, 0, 0);
-        aiControl.target = aiTarget.transform;
-    }
-
-    private void moveForward()
-    {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, aiSpeed);
         aiControl.target = aiTarget.transform;
     }
 
-    private void moveBack()
+    private void moveSouth()
     {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, -aiSpeed);
         aiControl.target = aiTarget.transform;
     }
 
+    private void moveWest()
+    {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(-aiSpeed, 0, 0);
+        aiControl.target = aiTarget.transform;
+    }
+
+    private void moveEast()
+    {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + new Vector3(aiSpeed, 0, 0);
+        aiControl.target = aiTarget.transform;
+    }
+
+
     private void turnLeft()
     {
-        navAgent.enabled = false;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        //navAgent.enabled = false;
         aiControl.transform.Rotate(0, -aiTurnSpeed, 0);
     }
 
     private void turnRight()
     {
-        navAgent.enabled = false;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+       // navAgent.enabled = false;
         aiControl.transform.Rotate(0, aiTurnSpeed, 0);
     }
+
+    private void moveForward()
+    {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + aiControl.transform.forward * aiSpeed;
+        aiControl.target = aiTarget.transform;
+    }
+
+    //private void moveBack()
+    //{
+    //    navAgent.enabled = true;
+    //    aiTarget.transform.position = aiControl.transform.position - aiControl.transform.forward * aiSpeed;
+    //    aiControl.target = aiTarget.transform;
+    //}
+
+    //private void moveRight()
+    //{
+    //    navAgent.enabled = true;
+    //    aiTarget.transform.position = aiControl.transform.position + aiControl.transform.right * aiSpeed;
+    //    aiControl.target = aiTarget.transform;
+    //}
+
+    //private void moveLeft()
+    //{
+    //    navAgent.enabled = true;
+    //    aiTarget.transform.position = aiControl.transform.position - aiControl.transform.right * aiSpeed;
+    //    aiControl.target = aiTarget.transform;
+    //}
 }

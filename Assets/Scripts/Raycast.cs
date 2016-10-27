@@ -71,9 +71,9 @@ public class Raycast : MonoBehaviour
         	print(xSubtrac);
         }
 
-        laser.transform.localPosition = new Vector3((percentZ * 2), (percentY * 2), 0);
+        //laser.transform.localPosition = new Vector3((percentZ * 2), (percentY * 2), 0);
         //laser.transform.localRotation = camToFollow.transform.localRotation * Quaternion.Euler(-45,0,0);
-        laser.transform.rotation = Quaternion.Euler((percentY * -boundX) + xSubtrac, percentZ * boundY, 0);
+        laser.transform.rotation = Quaternion.Euler((percentY * -boundX), percentZ * boundY, 0);
         //print(mainCamera.transform.TransformDirection(Vector3.forward));
         //fwd += angle;
         //print(angle);
