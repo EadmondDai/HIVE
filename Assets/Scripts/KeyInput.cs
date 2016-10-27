@@ -138,7 +138,7 @@ public class KeyInput : MonoBehaviour {
        if  (Input.anyKeyDown)
             {
                 typingAudio.pitch = Random.Range(1.0f - pitchRandomness, 1.0f + pitchRandomness);
-            typingAudio.PlayOneShot(typingSound);
+                typingAudio.PlayOneShot(typingSound);
             }
 
 
