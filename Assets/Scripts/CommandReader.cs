@@ -6,45 +6,30 @@ using UnityStandardAssets.Characters.ThirdPerson;
 public class CommandReader : MonoBehaviour
 {
     public GameObject[] NPCs;
+    public GameObject[] Cameras;
     public TextMesh outText;
     public string outputText = "";
     public RenderTexture rendTex;
     public AICharacterControl aiControl;
-    public Raycast ray;
     public NavMeshAgent navAgent;
     private GameObject aiTarget;
     private GameObject camView;
     private GameObject mainCam;
+    private GameObject noSignalPlane;
     private Camera slaveCam;
-    private GameObject rayCube;
-    private Renderer rayRend;
     private int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
     private float aiSpeed = 2.0f;
     private float startTime;
     private float aiTurnSpeed = 0.5f;
     public bool firstPerson = true;
-    public bool raycasting = false;
     public bool showingName = false;
+    public bool noSignal = true;
     private string username;
     private int stage = 0;      //when hack into peple, stage = 1
     private Vector3 referencePoint;
     private Vector3 back;
     private Vector3 left;
     private Vector3 right;
-
-    // Raycast screen variables
-    float zPosBound = -0.662f;
-    float zNegBound = 1.0717f;
-    float yPosBound = -0.764567f;
-    float yNegBound = -1.458765f;
-    float zHalfWidth;// = 2(zPosBound + 3);
-    float yHalfWidth;
-    float zPoint;
-    float yPoint;
-    float percentY;
-    float percentZ;
-    float midpointY;
-    float midpointZ;
 
     // Sound variables
     public AudioSource laserAudio;
@@ -54,27 +39,16 @@ public class CommandReader : MonoBehaviour
     void Start()
     {
         NPCs = GameObject.FindGameObjectsWithTag("AI");
+        Cameras = GameObject.FindGameObjectsWithTag("Camera");
         aiTarget = new GameObject();
-        //aiControl = GameObject.FindGameObjectWithTag("AI").GetComponent<AICharacterControl>();
-        //navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
         camView = GameObject.FindGameObjectWithTag("ComputerScreen");
+        noSignalPlane = GameObject.FindGameObjectWithTag("NoSignal");
         mainCam = GameObject.FindGameObjectWithTag("MainCamera");
-        ray = GetComponent<Raycast>();
-        rayCube = GameObject.FindGameObjectWithTag("RayCube");
         referencePoint = GameObject.FindGameObjectWithTag("ScreenReference").transform.position;
 
-        //slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
-
-        // Initialize sound variables
-        laserAudio = mainCam.GetComponent<AudioSource>();
-        laserSound = (AudioClip)Resources.Load("Sounds/LaserBeep");
-
-        zHalfWidth =  System.Math.Abs((zPosBound - zNegBound)/2);
-        yHalfWidth =  System.Math.Abs((yPosBound - yNegBound)/2);
-        midpointZ = zPosBound + zHalfWidth;
-        midpointY = yNegBound + yHalfWidth;
-
         camView.active = false;
+        noSignalPlane.active = false;
+
 
         outputText = outputText.Insert(outputText.Length, "\nType HELP for instructions");
         outText.text = outputText;
@@ -86,14 +60,6 @@ public class CommandReader : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        RaycastHit hit = ray.shootRay(mainCam.GetComponent<Camera>());
-
-        float dist = Vector3.Distance(mainCam.transform.position, hit.point);
-        dist = dist / 150;
-
-        rayCube.transform.localScale = new Vector3(dist,dist,dist);
-        rayCube.transform.position = hit.point;
-        rayRend = rayCube.GetComponent<Renderer>();
 
         if (showingName == true)
         {
@@ -103,23 +69,23 @@ public class CommandReader : MonoBehaviour
                 {
                     NPCs[i].transform.GetChild(4).gameObject.SetActive(false);
                 }
+                for (int i = 0; i < Cameras.Length; i++)
+                {
+                    Cameras[i].transform.GetChild(0).gameObject.SetActive(false);
+                }
                 showingName = false;
             }
         }
 
-        else
-        {
-            rayRend.material.shader = Shader.Find("Unlit/Color");
-            rayRend.material.SetColor("_Color", Color.white);
-        }
-
         if (Input.GetKeyDown(KeyCode.Tab))
        {
-            camView.active = !camView.active;
-
-            if (firstPerson == true)
+            if (noSignal == false)
             {
-                mainCam.active = !mainCam.active;
+                camView.active = !camView.active;
+            }
+            else
+            {
+                noSignalPlane.active = !noSignalPlane.active;
             }
         }
 
@@ -186,6 +152,18 @@ public class CommandReader : MonoBehaviour
         return null;
     }
 
+    public GameObject matchCamera(string rawInput)
+    {
+        for (int i = 0; i < Cameras.Length; i++)
+        {
+            if (rawInput == Cameras[i].name.ToLower())
+            {
+                return Cameras[i];
+            }
+        }
+        return null;
+    }
+
     public void input(string rawInput)
     {
         outputText = outputText.Insert(outputText.Length, username + "<" + rawInput + "\n");
@@ -205,31 +183,93 @@ public class CommandReader : MonoBehaviour
             {
                 NPCs[i].transform.GetChild(4).gameObject.SetActive(true);
             }
+            for (int i = 0; i < Cameras.Length; i++)
+            {
+                Cameras[i].transform.GetChild(0).gameObject.SetActive(true);
+            }
             showingName = true;
             startTime = Time.time;
-            //RaycastHit hit = ray.shootRay(mainCam.GetComponent<Camera>());
-            //raycasting = false;
-            //outputText = outputText.Insert(outputText.Length, "\n\nRaycast hit! \nVector3 = " + hit.point + "\nName: " + hit.collider.gameObject.name);
-            //outText.text = outputText;
-            //raycasting = true;
-            //startTime = Time.time;
-            //laserAudio.PlayOneShot(laserSound);
+        }
+
+        else if (words[0] == "hack")
+        {
+            if (words.Length == 1)
+            {
+                outputText = outputText.Insert(outputText.Length, "\nLack of target name.\n" + "eg.hack jack\n");
+                outText.text = outputText;
+            }
+
+            else if (words.Length == 2)
+            {
+                GameObject npc;
+                npc = matchName(words[1]);
+
+                if (npc == null)
+                {
+                    npc = matchCamera(words[1]);
+
+                    if (npc == null)
+                    {
+                        outputText = outputText.Insert(outputText.Length, "\nTarget not found.\n");
+                        outText.text = outputText;
+                    }
+
+                    else
+                    {
+                        //hack into camera
+                        if (slaveCam != null)
+                        {
+                            stop();
+                            moveState = 5;
+                            slaveCam.enabled = false;
+                        }
+
+                        slaveCam = npc.transform.GetChild(1).GetChild(0).GetComponent<Camera>();
+                        slaveCam.enabled = true;
+                        camView.active = true;
+                        noSignalPlane.active = false;
+                        noSignal = false;
+                        stage = 1;
+
+                        username = words[1];
+                        outputText = outputText.Insert(outputText.Length, "\nHacked into " + words[1] + "\n");
+                        outText.text = outputText;
+                    }
+
+
+                }
+
+                else
+                {
+                    if (slaveCam != null)
+                    {
+                        stop();
+                        moveState = 5;
+                        slaveCam.enabled = false;
+                    }
+
+                    username = words[1];
+                    stage = 1;
+                    aiControl = npc.GetComponent<AICharacterControl>();
+                    slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
+                    slaveCam.enabled = true;
+                    camView.active = true;
+                    noSignalPlane.active = false;
+                    noSignal = false;
+                    navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
+                }
+            }
+
+            else
+            {
+                outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
+                outText.text = outputText;
+            }
         }
 
         else if (stage == 0)
             {
-            if (words[0] == "raycast")
-                {
-                    RaycastHit hit = ray.shootRay(mainCam.GetComponent<Camera>());
-                    raycasting = false;
-                    outputText = outputText.Insert(outputText.Length, "\n\nRaycast hit! \nVector3 = " + hit.point + "\nName: " + hit.collider.gameObject.name);
-                    outText.text = outputText;
-                    raycasting = true;
-                    startTime = Time.time;
-                    laserAudio.PlayOneShot(laserSound);
-                 }
-
-                else if (words[0] == "help")
+            if (words[0] == "help")
                 {
                     string hackCommand = "hack  hack the person\n";
 
@@ -275,45 +315,6 @@ public class CommandReader : MonoBehaviour
                     }
                 }
 
-                else if (words[0] == "hack")
-                {
-                    if (words.Length == 1)
-                    {
-                        outputText = outputText.Insert(outputText.Length, "\nLack of target name.\n" + "eg.hack jack\n");
-                        outText.text = outputText;
-                    }
-
-                    else if (words.Length == 2)
-                    {
-                        GameObject npc;
-                    npc = matchName(words[1]);
-                        if (npc != null)
-                        {
-                            username = words[1];
-                            stage = 1;
-                            aiControl = npc.GetComponent<AICharacterControl>();
-                            slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
-                            slaveCam.enabled = true;
-                            camView.active = true;
-                            navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
-                            
-
-                        }
-
-                        else
-                        {
-                            outputText = outputText.Insert(outputText.Length, "\nTarget not found.\n");
-                            outText.text = outputText;
-                        }
-                    }
-
-                    else
-                    {
-                        outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
-                        outText.text = outputText;
-                    }
-                }
-
                 else
                 {
                     outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
@@ -323,17 +324,6 @@ public class CommandReader : MonoBehaviour
 
             else if (stage == 1)
             {
-                if (words[0] == "raycast")
-                {
-                    RaycastHit hit = ray.shootRay(mainCam.GetComponent<Camera>());
-                    raycasting = false;
-                    outputText = outputText.Insert(outputText.Length, "\n\nRaycast hit! \nVector3 = " + hit.point + "\nName: " + hit.collider.gameObject.name);
-                    outText.text = outputText;
-                    raycasting = true;
-                    startTime = Time.time;
-                    laserAudio.PlayOneShot(laserSound);
-                 }
-
                 if (words[0] == "help")
                 {
                     string moveCommand = "move  Move the person\n";
@@ -346,6 +336,15 @@ public class CommandReader : MonoBehaviour
                 {
                     outputText = outputText.Insert(outputText.Length, "\nExit from hacking" + username + "\n");
                     outText.text = outputText;
+                moveState = 5;
+
+
+                noSignal = true;
+                if (camView.active == true)
+                {
+                    camView.active = false;
+                    noSignalPlane.active = true;
+                }
                     username = "";
                     stage = 0;
                 }
@@ -464,9 +463,12 @@ public class CommandReader : MonoBehaviour
 
 private void stop()
     {
-        aiControl.target = aiControl.transform;
-        //navAgent.enabled = false;
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX;
+        if (aiControl != null)
+        {
+            aiControl.target = aiControl.transform;
+            //navAgent.enabled = false;
+            aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX;
+        }
     }
 
     private void moveNorth()

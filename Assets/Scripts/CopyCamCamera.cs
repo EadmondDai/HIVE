@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class CopyCamLaser : MonoBehaviour
+public class CopyCamCamera : MonoBehaviour
 {
     public Camera camToFollow;
 
@@ -14,8 +14,8 @@ public class CopyCamLaser : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        transform.localRotation = camToFollow.transform.localRotation * Quaternion.Euler(10,0,0);
+        transform.localRotation = camToFollow.transform.localRotation;
         transform.localPosition = camToFollow.transform.localPosition;
-        //transform.localPosition += new Vector3(0, 2, 0);
+        //Stransform.localPosition += new Vector3(0, 1, 0);
     }
 }
