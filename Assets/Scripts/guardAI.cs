@@ -33,27 +33,28 @@ public class guardAI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        print(LOS(cube.transform)) ;
-        //if (Vector3.Distance(aiCharControl.transform.position, aiCharControl.target.position) < minDist)
-        //{
-        //    if (i < (targets.Length - 1))
-        //    {
-        //        i++;
-        //        aiCharControl.target = targets[i];
-        //    }
-        //    else
-        //    {
-        //        i = 0;
-        //        aiCharControl.target = targets[i];
-        //    }
-        //}
+        if (Vector3.Distance(aiCharControl.transform.position, aiCharControl.target.position) < minDist)
+        {
+           if (i < (targets.Length - 1))
+           {
+               i++;
+               aiCharControl.target = targets[i];
+           }
+           else
+           {
+               i = 0;
+               aiCharControl.target = targets[i];
+           }
+        }
 
-        //if (LOS(cmdReader.slaveCam.transform))
-        //{
-        //    print("Game Over\n");
-        //}
+        if (LOS(cmdReader.slaveCam.transform) == true)
+        {
+           print("Game Over\n");
+            Time.timeScale = 0;
+        }
+
         //else
-        //    print("Not Over\n");
+          // print("Not Over\n");
 
     }
 
@@ -72,12 +73,12 @@ public class guardAI : MonoBehaviour
 
     bool LOS(Transform target)
     {
-        if (Vector3.Angle(target.position - transform.position, transform.forward) <= fov &&
-            Physics.Linecast(transform.position, target.position, out hit) && 
-            hit.collider.transform == target)
+        if (Vector3.Angle(target.position - transform.position, transform.forward) <= fov && Physics.Linecast(transform.position, target.position, out hit) &&  hit.collider.transform == target)
         {
             return true;
         }
+
+        print(Vector3.Angle(target.position - transform.position, transform.forward) + " : " +  fov + " | " + Physics.Linecast(transform.position, target.position, out hit) + " | " + hit.collider.transform + " : " + target);
         return false;
     }
 
