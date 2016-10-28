@@ -40,16 +40,16 @@ public class Raycast : MonoBehaviour
 
     public RaycastHit shootSlaveRay(Camera mainCamera, float percentZ, float percentY)
     {
-    	laser = mainCamera.transform.GetChild(0).gameObject;
+        laser = mainCamera.transform.GetChild(0).gameObject;
         Vector3 fwd = laser.transform.TransformDirection(Vector3.forward);
 
         float xSubtrac = 0;
 
         if (percentZ < 0)
         {
-        	if (percentY < 0)
-        	{
-        		xSubtrac = 10 * percentZ ;
+            if (percentY < 0)
+            {
+                xSubtrac = 10 * percentZ ;
         	}
         	else
         	{

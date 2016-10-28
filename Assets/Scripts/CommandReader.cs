@@ -24,9 +24,13 @@ public class CommandReader : MonoBehaviour
     private float aiTurnSpeed = 0.5f;
     public bool firstPerson = true;
     public bool raycasting = false;
+    public bool showingName = false;
     private string username;
     private int stage = 0;      //when hack into peple, stage = 1
     private Vector3 referencePoint;
+    private Vector3 back;
+    private Vector3 left;
+    private Vector3 right;
 
     // Raycast screen variables
     float zPosBound = -0.662f;
@@ -87,61 +91,22 @@ public class CommandReader : MonoBehaviour
         float dist = Vector3.Distance(mainCam.transform.position, hit.point);
         dist = dist / 150;
 
-        //if (hit.collider.gameObject.name == "ScreenTV")
-        //{
-        //    //float angle = Vector3.Angle(hit.point, referencePoint);
-        //    //Vector3 angle = referencePoint - hit.point;
-        //    //angle.x = angle.z;
-        //    //angle.x = 0;
-        //    //angle.y = -angle.y;
-        //    //print(hit.point);
-            
-        //    // Z is on the left
-        //    zPoint = hit.point.z;
-        //    //print(hit.point.y);
-        //    yPoint = hit.point.y;
-        //   // print(zPoint);
-
-        //    if (zPoint > midpointZ)
-        //    {  // print(zPoint - midpointZ);
-        //        percentZ = -(System.Math.Abs(zPoint - midpointZ)/zHalfWidth);
-        //    }
-        //    // Z is on the right
-        //    if (zPoint < midpointZ)
-        //    {    
-        //        percentZ = (System.Math.Abs(midpointZ - zPoint)/zHalfWidth);
-        //    }
-        //    // Y is on the right
-        //    if (yPoint > midpointY)
-        //    {    
-        //        percentY = (System.Math.Abs(yPoint - midpointY)/yHalfWidth);
-        //    }
-        //    // Z is on the left
-        //    if (yPoint < midpointY)
-        //    {    
-        //        percentY = -(System.Math.Abs(midpointY-yPoint)/yHalfWidth);
-        //    }
-
-        //   // print(midpointZ);
-        //   // print(percentY + " : " + percentZ);
-
-        //    hit = ray.shootSlaveRay(slaveCam, percentZ, percentY);
-        //    dist = Vector3.Distance(slaveCam.transform.position, hit.point);
-        //    dist = dist / 100;
-        //}
         rayCube.transform.localScale = new Vector3(dist,dist,dist);
         rayCube.transform.position = hit.point;
         rayRend = rayCube.GetComponent<Renderer>();
 
-        if (raycasting == true)
+        if (showingName == true)
         {
-            rayRend.material.shader = Shader.Find("Unlit/Color");
-            rayRend.material.SetColor("_Color", Color.red);
-            if (Time.time - startTime >= .5f)
+            if (Time.time - startTime >= 1.5f)
             {
-                raycasting = false;
+                for (int i = 0; i < NPCs.Length; i++)
+                {
+                    NPCs[i].transform.GetChild(4).gameObject.SetActive(false);
+                }
+                showingName = false;
             }
         }
+
         else
         {
             rayRend.material.shader = Shader.Find("Unlit/Color");
@@ -190,18 +155,19 @@ public class CommandReader : MonoBehaviour
         {
             moveForward();
         }
-        //else if (moveState == 9)
-        //{
-        //    moveBack();
-        //}
-        //else if (moveState == 10)
-        //{
-        //    moveLeft();
-        //}
-        //else if (moveState == 11)
-        //{
-        //    moveRight();
-        //}
+        else if (moveState == 9)
+        {
+            moveBack();
+        }
+        else if (moveState == 10)
+        {
+            print("left" + Time.time);
+            moveLeft();
+        }
+        else if (moveState == 11)
+        {
+            moveRight();
+        }
     }
 
     public string getUsername()
@@ -211,7 +177,6 @@ public class CommandReader : MonoBehaviour
 
     public GameObject matchName(string rawInput)
     {
-        GameObject str1;
         for (int i = 0; i < NPCs.Length; i++) {
             if(rawInput == NPCs[i].name.ToLower())
             {
@@ -229,14 +194,31 @@ public class CommandReader : MonoBehaviour
         string[] words = rawInput.ToLower().Split(delimiterChars);
         string cameraCommand = "turn  Rotate the player\n";
         string tabKey = "tab(key)  Switch view\n";
-        string raycastCommand = "raycast  Give info on what you're looking at\n";
+        //string raycastCommand = "raycast  Give info on what you're looking at\n";
+        string showNameCommand = "showname  Show names of all visible objects\n";
 
 
+        if (words[0] == "showname")
+        {
 
-        if (stage == 0)
+            for (int i = 0; i < NPCs.Length; i++)
             {
+                NPCs[i].transform.GetChild(4).gameObject.SetActive(true);
+            }
+            showingName = true;
+            startTime = Time.time;
+            //RaycastHit hit = ray.shootRay(mainCam.GetComponent<Camera>());
+            //raycasting = false;
+            //outputText = outputText.Insert(outputText.Length, "\n\nRaycast hit! \nVector3 = " + hit.point + "\nName: " + hit.collider.gameObject.name);
+            //outText.text = outputText;
+            //raycasting = true;
+            //startTime = Time.time;
+            //laserAudio.PlayOneShot(laserSound);
+        }
 
-                if (words[0] == "raycast")
+        else if (stage == 0)
+            {
+            if (words[0] == "raycast")
                 {
                     RaycastHit hit = ray.shootRay(mainCam.GetComponent<Camera>());
                     raycasting = false;
@@ -251,7 +233,7 @@ public class CommandReader : MonoBehaviour
                 {
                     string hackCommand = "hack  hack the person\n";
 
-                    outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + cameraCommand + tabKey + raycastCommand);
+                    outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + tabKey + showNameCommand);
                     outText.text = outputText;
                 }
 
@@ -356,7 +338,7 @@ public class CommandReader : MonoBehaviour
                 {
                     string moveCommand = "move  Move the person\n";
                     string exitCommand = "exit  Exit from hacking\n";
-                    outputText = outputText.Insert(outputText.Length, "\n\n" + moveCommand + cameraCommand + exitCommand + tabKey);
+                    outputText = outputText.Insert(outputText.Length, "\n\n" + moveCommand + cameraCommand + exitCommand + tabKey + showNameCommand);
                     outText.text = outputText;
                 }
 
@@ -407,20 +389,23 @@ public class CommandReader : MonoBehaviour
                             moveState = 8;
                         }
 
-                        //else if (words[1] == "back")
-                        //{
-                        //    moveState = 9;
-                        //}
+                        else if (words[1] == "back")
+                        {
+                            moveState = 9;
+                            back = -aiControl.transform.forward;
+                        }
 
-                        //else if (words[1] == "left")
-                        //{
-                        //    moveState = 10;
-                        //}
+                    else if (words[1] == "left")
+                    {
+                        left = -aiControl.transform.right;
+                        moveState = 10;
+                    }
 
-                        //else if (words[1] == "right")
-                        //{
-                        //    moveState = 11;
-                        //}
+                    else if (words[1] == "right")
+                    {
+                        left = aiControl.transform.right;
+                        moveState = 11;
+                    }
 
                     else
                         {
@@ -539,24 +524,27 @@ private void stop()
         aiControl.target = aiTarget.transform;
     }
 
-    //private void moveBack()
-    //{
-    //    navAgent.enabled = true;
-    //    aiTarget.transform.position = aiControl.transform.position - aiControl.transform.forward * aiSpeed;
-    //    aiControl.target = aiTarget.transform;
-    //}
+    private void moveBack()
+    {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + back * aiSpeed;
+        aiControl.target = aiTarget.transform;
+    }
 
-    //private void moveRight()
-    //{
-    //    navAgent.enabled = true;
-    //    aiTarget.transform.position = aiControl.transform.position + aiControl.transform.right * aiSpeed;
-    //    aiControl.target = aiTarget.transform;
-    //}
+    private void moveRight()
+    {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + right * aiSpeed;
+        aiControl.target = aiTarget.transform;
+    }
 
-    //private void moveLeft()
-    //{
-    //    navAgent.enabled = true;
-    //    aiTarget.transform.position = aiControl.transform.position - aiControl.transform.right * aiSpeed;
-    //    aiControl.target = aiTarget.transform;
-    //}
+    private void moveLeft()
+    {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        navAgent.enabled = true;
+        aiTarget.transform.position = aiControl.transform.position + left * aiSpeed;
+        aiControl.target = aiTarget.transform;
+    }
 }
