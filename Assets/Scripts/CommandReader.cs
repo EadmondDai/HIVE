@@ -161,11 +161,11 @@ public class CommandReader : MonoBehaviour
         }
         else if (moveState == 10)
         {
-            print("left" + Time.time);
             moveLeft();
         }
         else if (moveState == 11)
         {
+        	print("left" + Time.time);
             moveRight();
         }
     }
@@ -395,19 +395,19 @@ public class CommandReader : MonoBehaviour
                             back = -aiControl.transform.forward;
                         }
 
-                    else if (words[1] == "left")
-                    {
-                        left = -aiControl.transform.right;
-                        moveState = 10;
-                    }
+                        else if (words[1] == "left")
+                        {
+                            left = -aiControl.transform.right;
+                            moveState = 10;
+                        }
+                        //print("moving");
+                        else if (words[1] == "right")
+                        {
+                            right = aiControl.transform.right;
+                            moveState = 11;
+                        }
 
-                    else if (words[1] == "right")
-                    {
-                        left = aiControl.transform.right;
-                        moveState = 11;
-                    }
-
-                    else
+                        else
                         {
                             outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                             outText.text = outputText;
@@ -534,7 +534,7 @@ private void stop()
 
     private void moveRight()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+    	aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + right * aiSpeed;
         aiControl.target = aiTarget.transform;

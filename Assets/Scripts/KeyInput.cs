@@ -1509,7 +1509,7 @@ Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x,0,Caps
         	priorInput[0] = text;
         	index = -1;
 
-        	print(priorInput[0] +  " " + priorInput[1] +  " " + priorInput[2] +  " " + priorInput[3] +  " " + priorInput[4] +  " " + priorInput[5] +  " " + priorInput[6] +  " " + priorInput[7] +  " " + priorInput[8] +  " " + priorInput[9] +  " ");
+        	//print(priorInput[0] +  " " + priorInput[1] +  " " + priorInput[2] +  " " + priorInput[3] +  " " + priorInput[4] +  " " + priorInput[5] +  " " + priorInput[6] +  " " + priorInput[7] +  " " + priorInput[8] +  " " + priorInput[9] +  " ");
       }
        text = "";
     }
