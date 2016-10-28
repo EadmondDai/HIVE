@@ -16,7 +16,7 @@ public class CommandReader : MonoBehaviour
     private GameObject camView;
     private GameObject mainCam;
     private GameObject noSignalPlane;
-    private Camera slaveCam;
+    public Camera slaveCam;
     private int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
     private float aiSpeed = 2.0f;
     private float startTime;
@@ -68,10 +68,12 @@ public class CommandReader : MonoBehaviour
                 for (int i = 0; i < NPCs.Length; i++)
                 {
                     NPCs[i].transform.GetChild(4).gameObject.SetActive(false);
+                    NPCs[i].transform.GetChild(5).gameObject.SetActive(false);
                 }
                 for (int i = 0; i < Cameras.Length; i++)
                 {
                     Cameras[i].transform.GetChild(0).gameObject.SetActive(false);
+                    Cameras[i].transform.GetChild(1).gameObject.SetActive(false);
                 }
                 showingName = false;
             }
@@ -182,10 +184,12 @@ public class CommandReader : MonoBehaviour
             for (int i = 0; i < NPCs.Length; i++)
             {
                 NPCs[i].transform.GetChild(4).gameObject.SetActive(true);
+                NPCs[i].transform.GetChild(5).gameObject.SetActive(true);
             }
             for (int i = 0; i < Cameras.Length; i++)
             {
                 Cameras[i].transform.GetChild(0).gameObject.SetActive(true);
+                Cameras[i].transform.GetChild(1).gameObject.SetActive(true);
             }
             showingName = true;
             startTime = Time.time;
@@ -224,7 +228,7 @@ public class CommandReader : MonoBehaviour
                             slaveCam.enabled = false;
                         }
 
-                        slaveCam = npc.transform.GetChild(1).GetChild(0).GetComponent<Camera>();
+                        slaveCam = npc.transform.GetChild(2).GetChild(0).GetComponent<Camera>();
                         slaveCam.enabled = true;
                         camView.active = true;
                         noSignalPlane.active = false;
