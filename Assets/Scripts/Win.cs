@@ -18,13 +18,16 @@ public class Win : MonoBehaviour
 	}
     void OnCollisionEnter(Collision collider)
     {
-        print("SNAK ATAK" + Time.time);
+        //print("YOU WIN" + Time.time);
         if (collider.gameObject.tag == "AI")
         {
-            if (collider.gameObject.transform.GetChild(4) && cmd.slaveCam!=null)
+            print("1");
+            if (collider.gameObject.transform.GetChild(3) && cmd.slaveCam!=null)
             {
-                if (collider.gameObject.transform.GetChild(4) == cmd.slaveCam)
+                print("2");
+                if (collider.gameObject.transform.GetChild(3) == cmd.slaveCam.transform)
                 {
+                    print("3");
                     win();
                 }
             }
@@ -37,6 +40,6 @@ public class Win : MonoBehaviour
     void win()
     {
         print("YOU WIN");
-        Application.LoadLevel(Application.loadedLevel);
+        Time.timeScale = 0;
     }
 }

@@ -13,19 +13,19 @@ public class CommandReader : MonoBehaviour
     public AICharacterControl aiControl;
     public NavMeshAgent navAgent;
     private GameObject aiTarget;
-    private GameObject camView;
+    public GameObject camView;
     private GameObject mainCam;
-    private GameObject noSignalPlane;
+    public GameObject noSignalPlane;
     public Camera slaveCam;
-    private int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
+    public int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
     private float aiSpeed = 2.0f;
     private float startTime;
     private float aiTurnSpeed = 0.5f;
     public bool firstPerson = true;
     public bool showingName = false;
     public bool noSignal = true;
-    private string username;
-    private int stage = 0;      //when hack into peple, stage = 1
+    public string username;
+    public int stage = 0;      //when hack into peple, stage = 1
     private Vector3 referencePoint;
     private Vector3 back;
     private Vector3 left;
@@ -52,9 +52,6 @@ public class CommandReader : MonoBehaviour
 
         outputText = outputText.Insert(outputText.Length, "\nType HELP for instructions");
         outText.text = outputText;
-
-        //print(midpointZ);
-        //print(midpointY);
     }
 
     // Update is called once per frame
@@ -133,7 +130,6 @@ public class CommandReader : MonoBehaviour
         }
         else if (moveState == 11)
         {
-        	print("left" + Time.time);
             moveRight();
         }
     }
@@ -261,6 +257,7 @@ public class CommandReader : MonoBehaviour
                     noSignalPlane.active = false;
                     noSignal = false;
                     navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
+                    aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
                 }
             }
 
@@ -340,7 +337,7 @@ public class CommandReader : MonoBehaviour
                 {
                     outputText = outputText.Insert(outputText.Length, "\nExit from hacking" + username + "\n");
                     outText.text = outputText;
-                moveState = 5;
+                    moveState = 5;
 
 
                 noSignal = true;
@@ -403,7 +400,6 @@ public class CommandReader : MonoBehaviour
                             left = -aiControl.transform.right;
                             moveState = 10;
                         }
-                        //print("moving");
                         else if (words[1] == "right")
                         {
                             right = aiControl.transform.right;
@@ -477,7 +473,7 @@ private void stop()
 
     private void moveNorth()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, aiSpeed);
         aiControl.target = aiTarget.transform;
@@ -485,7 +481,7 @@ private void stop()
 
     private void moveSouth()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, -aiSpeed);
         aiControl.target = aiTarget.transform;
@@ -493,7 +489,7 @@ private void stop()
 
     private void moveWest()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(-aiSpeed, 0, 0);
         aiControl.target = aiTarget.transform;
@@ -501,7 +497,7 @@ private void stop()
 
     private void moveEast()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(aiSpeed, 0, 0);
         aiControl.target = aiTarget.transform;
@@ -510,21 +506,21 @@ private void stop()
 
     private void turnLeft()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         //navAgent.enabled = false;
         aiControl.transform.Rotate(0, -aiTurnSpeed, 0);
     }
 
     private void turnRight()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-       // navAgent.enabled = false;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        // navAgent.enabled = false;
         aiControl.transform.Rotate(0, aiTurnSpeed, 0);
     }
 
     private void moveForward()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + aiControl.transform.forward * aiSpeed;
         aiControl.target = aiTarget.transform;
@@ -532,7 +528,7 @@ private void stop()
 
     private void moveBack()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + back * aiSpeed;
         aiControl.target = aiTarget.transform;
@@ -540,7 +536,7 @@ private void stop()
 
     private void moveRight()
     {
-    	aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+    	aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + right * aiSpeed;
         aiControl.target = aiTarget.transform;
@@ -548,7 +544,7 @@ private void stop()
 
     private void moveLeft()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + left * aiSpeed;
         aiControl.target = aiTarget.transform;

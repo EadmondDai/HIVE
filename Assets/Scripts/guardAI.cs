@@ -10,11 +10,10 @@ public class guardAI : MonoBehaviour
     int i = 0;
 
     // Line of sight variables
-    private float fov = 360.0f;
+    private float fov = 60.0f;
     private float sightDist = 20.0f;
     private RaycastHit hit;
     private CommandReader cmdReader;
-    public GameObject cube;
 
 
     // Use this for initialization
@@ -47,38 +46,37 @@ public class guardAI : MonoBehaviour
            }
         }
 
-        if (LOS(cmdReader.slaveCam.transform) == true)
+        if (cmdReader.slaveCam != null)
         {
-           print("Game Over\n");
-            Time.timeScale = 0;
+            if (LOS(cmdReader.slaveCam.transform.parent.transform) == true)
+            {
+                cmdReader.moveState = 5;
+                cmdReader.noSignal = true;
+                if (cmdReader.camView.active == true)
+                {
+                    cmdReader.camView.active = false;
+                    cmdReader.noSignalPlane.active = true;
+                }
+                cmdReader.username = "";
+                cmdReader.stage = 0;
+            Destroy(cmdReader.slaveCam.transform.parent.gameObject);
+                cmdReader.outputText = cmdReader.outputText.Insert(cmdReader.outputText.Length, "\nYou were spotted...\nYour drone has been taken from you.");
+                cmdReader.outText.text = cmdReader.outputText;
+            }
         }
-
-        //else
-          // print("Not Over\n");
-
+     
     }
 
-    // Line of sight script
-    //bool LOS(Transform target)
-    //{
-    //    if (Vector3.Angle(target.position - transform.position, transform.forward) <= fov &&
-    //        Physics.Linecast(transform.position, target.position, out hit) &&
-    //        hit.collider.transform == target && Vector3.Distance(transform.position, target.position) < sightDist)
-    //    {
-    //        return true;
-    //    }
-
-    //    return false;
-    //}
+    
 
     bool LOS(Transform target)
     {
-        if (Vector3.Angle(target.position - transform.position, transform.forward) <= fov && Physics.Linecast(transform.position, target.position, out hit) &&  hit.collider.transform == target)
+        if (Vector3.Angle(target.position - transform.position, transform.forward) <= fov && Physics.Linecast(transform.position, target.position, out hit) &&  hit.collider.transform == target && Vector3.Distance(transform.position, target.position) < sightDist)
         {
             return true;
         }
 
-        print(Vector3.Angle(target.position - transform.position, transform.forward) + " : " +  fov + " | " + Physics.Linecast(transform.position, target.position, out hit) + " | " + hit.collider.transform + " : " + target);
+       // print(Vector3.Angle(target.position - transform.position, transform.forward) + " : " +  fov + " | " + Physics.Linecast(transform.position, target.position, out hit) + " | " + hit.collider.transform + " : " + target);
         return false;
     }
 
