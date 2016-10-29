@@ -14,6 +14,8 @@ public class guardAI : MonoBehaviour
     private float sightDist = 20.0f;
     private RaycastHit hit;
     private CommandReader cmdReader;
+    public bool lost = false;
+    public float startTime = 0;
 
 
     // Use this for initialization
@@ -32,6 +34,14 @@ public class guardAI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (lost == true)
+        {
+            if (Time.time-startTime > 2)
+            {
+                Application.LoadLevel(Application.loadedLevel);
+            }
+        }
+
         if (Vector3.Distance(aiCharControl.transform.position, aiCharControl.target.position) < minDist)
         {
            if (i < (targets.Length - 1))
@@ -62,6 +72,8 @@ public class guardAI : MonoBehaviour
             Destroy(cmdReader.slaveCam.transform.parent.gameObject);
                 cmdReader.outputText = cmdReader.outputText.Insert(cmdReader.outputText.Length, "\nYou were spotted...\nYour drone has been taken from you.");
                 cmdReader.outText.text = cmdReader.outputText;
+                lost = true;
+                startTime = Time.time;
             }
         }  
     }

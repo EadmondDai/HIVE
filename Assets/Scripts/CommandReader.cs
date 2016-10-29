@@ -1,12 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 //using System;
+using System.Collections.Generic;
 using UnityStandardAssets.Characters.ThirdPerson;
 
 public class CommandReader : MonoBehaviour
 {
+    private int index;  //index of list of gameobjects for erase()
+    private int eraseStart = 0;
+    private List<GameObject> list = new List<GameObject>();
     public GameObject[] NPCs;
     public GameObject[] Cameras;
+    public GameObject Command;
     public TextMesh outText;
     public string outputText = "";
     public RenderTexture rendTex;
@@ -41,6 +46,7 @@ public class CommandReader : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        Command = GameObject.FindGameObjectWithTag("Command");
         NPCs = GameObject.FindGameObjectsWithTag("AI");
         Cameras = GameObject.FindGameObjectsWithTag("Camera");
         aiTarget = new GameObject();
@@ -59,6 +65,11 @@ public class CommandReader : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        if (eraseStart == 1)
+        {
+            StartCoroutine("eraseAll");
+        }
 
         if (showingName == true)
         {
@@ -214,45 +225,12 @@ public class CommandReader : MonoBehaviour
             else if (words.Length == 2)
             {
                 GameObject npc;
-                npc = matchName(words[1]);
 
-                if (npc == null)
+                if (words[1].ToLower() == "command")
                 {
-                    npc = matchCamera(words[1]);
+                    print("CMD");
+                    npc = Command;
 
-                    if (npc == null)
-                    {
-                        outputText = outputText.Insert(outputText.Length, "\nTarget not found.\n");
-                        outText.text = outputText;
-                    }
-
-                    else
-                    {
-                        //hack into camera
-                        if (slaveCam != null)
-                        {
-                            stop();
-                            moveState = 5;
-                            slaveCam.enabled = false;
-                        }
-
-                        slaveCam = npc.transform.GetChild(2).GetChild(0).GetComponent<Camera>();
-                        slaveCam.enabled = true;
-                        camView.active = true;
-                        noSignalPlane.active = false;
-                        noSignal = false;
-                        stage = 1;
-
-                        username = words[1];
-                        outputText = outputText.Insert(outputText.Length, "\nHacked into " + words[1] + "\n");
-                        outText.text = outputText;
-                    }
-
-
-                }
-
-                else
-                {
                     if (slaveCam != null)
                     {
                         stop();
@@ -261,18 +239,82 @@ public class CommandReader : MonoBehaviour
                     }
 
                     stop();
-                    moveState = 5;
+                    moveState = 0;
                     username = words[1];
-                    stage = 1;
-                    aiControl = npc.GetComponent<AICharacterControl>();
-                    slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
+                    stage = 3;
+                    ////aiControl = npc.GetComponent<AICharacterControl>();
+                    slaveCam = npc.transform.GetChild(3).GetComponent<Camera>();
                     slaveCam.enabled = true;
-                    ai = aiControl.GetComponent<guardAI>();
+                    ////ai = aiControl.GetComponent<guardAI>();
                     camView.active = true;
-                    noSignalPlane.active = false;
+                   noSignalPlane.active = false;
                     noSignal = false;
-                    navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
-                    //aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+                    ////navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
+                }
+
+
+                else
+                {
+                    npc = matchName(words[1]);
+
+                    if (npc == null)
+                    {
+                        npc = matchCamera(words[1]);
+
+                        if (npc == null)
+                        {
+                            outputText = outputText.Insert(outputText.Length, "\nTarget not found.\n");
+                            outText.text = outputText;
+                        }
+
+                        else
+                        {
+                            //hack into camera
+                            if (slaveCam != null)
+                            {
+                                stop();
+                                moveState = 5;
+                                slaveCam.enabled = false;
+                            }
+
+                            slaveCam = npc.transform.GetChild(2).GetChild(0).GetComponent<Camera>();
+                            slaveCam.enabled = true;
+                            camView.active = true;
+                            noSignalPlane.active = false;
+                            noSignal = false;
+                            stage = 1;
+
+                            username = words[1];
+                            outputText = outputText.Insert(outputText.Length, "\nHacked into " + words[1] + "\n");
+                            outText.text = outputText;
+                        }
+
+
+                    }
+
+                    else
+                    {
+                        if (slaveCam != null)
+                        {
+                            stop();
+                            moveState = 5;
+                            slaveCam.enabled = false;
+                        }
+
+                        stop();
+                        moveState = 5;
+                        username = words[1];
+                        stage = 1;
+                        aiControl = npc.GetComponent<AICharacterControl>();
+                        slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
+                        slaveCam.enabled = true;
+                        ai = aiControl.GetComponent<guardAI>();
+                        camView.active = true;
+                        noSignalPlane.active = false;
+                        noSignal = false;
+                        navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
+                        //aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+                    }
                 }
             }
 
@@ -502,7 +544,33 @@ public class CommandReader : MonoBehaviour
             }
             }
 
+        else if (stage == 3)
+        {
+            if (words[0] == "help")
+            {
+                string eraseCommand = "eraseall  Erase everything.\n";
+                outputText = outputText.Insert(outputText.Length, "\n\n" + eraseCommand + tabKey + showNameCommand);
+                outText.text = outputText;
+            }
+
+            else if (words[0] == "eraseall")
+            {
+                foreach (GameObject gameObj in GameObject.FindObjectsOfType<GameObject>())
+                {
+                    list.Add(gameObj);
+                }
+                eraseStart = 1;
+            }
+
             else
+            {
+                print("UHOH");
+                outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
+                outText.text = outputText;
+            }
+        }
+
+        else
             {
                 outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                 outText.text = outputText;
@@ -641,5 +709,33 @@ public class CommandReader : MonoBehaviour
         {
             stop();
         }
+    }
+
+    private void erase()
+    {
+        foreach (GameObject gameObj in GameObject.FindObjectsOfType<GameObject>())
+        {
+            list.Add(gameObj);
+            //print(gameObj);
+        }
+        StartCoroutine("eraseAll");
+    }
+
+    IEnumerator eraseAll()
+    {
+        if (index < list.Count)
+        {
+            if (list[index].name != "Player" && list[index] != null)
+            {
+                if (list[index].GetComponent<MeshRenderer>())
+                {
+                    list[index].GetComponent<MeshRenderer>().enabled = false;
+                }
+                print(index + ": " + list[index].name);
+                //Destroy(list[index]);
+            }
+            index++;
+        }
+        yield return new WaitForSeconds(0.01f);
     }
 }

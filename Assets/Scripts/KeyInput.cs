@@ -150,7 +150,7 @@ public class KeyInput : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             UnityEngine.VR.InputTracking.Recenter();
-            Application.LoadLevel(Application.loadedLevel);
+            
         }
 
         if (Input.GetKeyDown("`"))
