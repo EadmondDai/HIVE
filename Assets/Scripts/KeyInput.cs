@@ -411,7 +411,7 @@ public class KeyInput : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.Backspace))
         {
-            if (Time.time - backStartTime > 0.05f)
+            if (Time.time - backStartTime > 0.1f)
             {
                 backStartTime = Time.time;
                 text = text.Remove(text.Length - 1);

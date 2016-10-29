@@ -52,7 +52,6 @@ public class CommandReader : MonoBehaviour
         camView.active = false;
         noSignalPlane.active = false;
 
-
         outputText = outputText.Insert(outputText.Length, "\nType HELP for instructions");
         outText.text = outputText;
     }
@@ -261,17 +260,14 @@ public class CommandReader : MonoBehaviour
                         slaveCam.enabled = false;
                     }
 
+                    stop();
+                    moveState = 5;
                     username = words[1];
                     stage = 1;
                     aiControl = npc.GetComponent<AICharacterControl>();
                     slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
                     slaveCam.enabled = true;
                     ai = aiControl.GetComponent<guardAI>();
-                    ai.enabled = false;
-                    aiControl.target = aiControl.transform;
-                    //navAgent.enabled = false;
-                    aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX;
-                     stop();
                     camView.active = true;
                     noSignalPlane.active = false;
                     noSignal = false;
@@ -514,10 +510,11 @@ public class CommandReader : MonoBehaviour
 
         }
 
-private void stop()
+    private void stop()
     {
         if (aiControl != null)
         {
+            ai.enabled = false;
             aiControl.target = aiControl.transform;
             //navAgent.enabled = false;
             aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX;
@@ -526,6 +523,7 @@ private void stop()
 
     private void moveNorth()
     {
+        stop();
         aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, aiSpeed);
@@ -534,6 +532,7 @@ private void stop()
 
     private void moveSouth()
     {
+        stop();
         aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(0, 0, -aiSpeed);
@@ -542,6 +541,7 @@ private void stop()
 
     private void moveWest()
     {
+        stop();
         aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(-aiSpeed, 0, 0);
@@ -550,6 +550,7 @@ private void stop()
 
     private void moveEast()
     {
+        stop();
         aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + new Vector3(aiSpeed, 0, 0);
@@ -559,20 +560,23 @@ private void stop()
 
     private void turnLeft()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        stop();
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY;
         //navAgent.enabled = false;
         aiControl.transform.Rotate(0, -aiTurnSpeed, 0);
     }
 
     private void turnRight()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        stop();
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY;
         // navAgent.enabled = false;
         aiControl.transform.Rotate(0, aiTurnSpeed, 0);
     }
 
     private void moveForward()
     {
+        stop();
         aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + aiControl.transform.forward * aiSpeed;
@@ -581,6 +585,7 @@ private void stop()
 
     private void moveBack()
     {
+        stop();
         aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + back * aiSpeed;
@@ -589,6 +594,7 @@ private void stop()
 
     private void moveRight()
     {
+        stop();
     	aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + right * aiSpeed;
@@ -597,6 +603,7 @@ private void stop()
 
     private void moveLeft()
     {
+        stop();
         aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + left * aiSpeed;
@@ -604,8 +611,10 @@ private void stop()
     }
     private void turnUp()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        if ((slaveCam.transform.rotation.x * 100) > -50)
+        stop();
+        //print(slaveCam.transform.localRotation.x);// * 100);
+       // aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ ;
+        if ((slaveCam.transform.localRotation.x * 100) > -50)
         {
             slaveCam.transform.localRotation *= Quaternion.Euler(-aiTurnSpeed, 0, 0);
         }
@@ -618,7 +627,8 @@ private void stop()
 
     private void turnDown()
     {
-        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        stop();
+        //aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         // navAgent.enabled = false;
         if (Quaternion.Angle(initRotation, slaveCam.transform.rotation) < 90)
         {

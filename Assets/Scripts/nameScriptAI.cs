@@ -6,8 +6,8 @@ public class nameScriptAI : MonoBehaviour
     private TextMesh nameMesh;
     private Transform player;
     private CommandReader cmd;
-    private float divider = 400;
-    private float thresh = 100;
+    private float divider = 300;
+    private float thresh = 50;
     // Use this for initialization
     void Start ()
     {
@@ -29,8 +29,9 @@ public class nameScriptAI : MonoBehaviour
             transform.LookAt(player);
             float dist = Vector3.Distance(player.position, transform.position);
 
-            if (dist < thresh && player.parent != transform.parent)
+            if (dist < thresh && player.parent != transform.parent && player.parent.parent != transform.parent)
             {
+                print(player.parent + " : " + transform.parent);
                 nameMesh.text = transform.parent.name;
                 nameMesh.transform.localScale = new Vector3(dist / divider, dist / divider, dist / divider);
             }

@@ -6,7 +6,7 @@ public class guardAI : MonoBehaviour
 {
     public Transform[] targets;
     private AICharacterControl aiCharControl;
-    private float minDist = 3;
+    private float minDist = 5;
     int i = 0;
 
     // Line of sight variables
