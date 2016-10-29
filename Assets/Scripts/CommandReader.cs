@@ -101,13 +101,12 @@ public class CommandReader : MonoBehaviour
 
         if (showingName == true)
         {
-            if (Time.time - startTime >= 1.5f)
+            print("showing");
+            if (Time.time - startTime >= 2.5f)
             {
                 for (int i = 0; i < NPCs.Length; i++)
                 {
-                    Renderer rend = NPCs[i].transform.GetChild(0).GetComponent<Renderer>();
-                    rend.material.shader = Shader.Find("Specular");
-                    rend.material.SetColor("_SpecColor", Color.black);
+                    print(NPCs[i]);
                     NPCs[i].transform.GetChild(4).gameObject.SetActive(false);
                     NPCs[i].transform.GetChild(5).gameObject.SetActive(false);
                 }
@@ -230,9 +229,11 @@ public class CommandReader : MonoBehaviour
 
         if (words[0] == "showname")
         {
+            print("showname");
 
             for (int i = 0; i < NPCs.Length; i++)
             {
+                print(NPCs[i]);
                 NPCs[i].transform.GetChild(4).gameObject.SetActive(true);
                 NPCs[i].transform.GetChild(5).gameObject.SetActive(true);
             }
@@ -241,6 +242,9 @@ public class CommandReader : MonoBehaviour
                 Cameras[i].transform.GetChild(0).gameObject.SetActive(true);
                 Cameras[i].transform.GetChild(1).gameObject.SetActive(true);
             }
+
+            Command.transform.GetChild(4).gameObject.SetActive(true);
+            Command.transform.GetChild(5).gameObject.SetActive(true);
 
             showingName = true;
             startTime = Time.time;
@@ -279,7 +283,7 @@ public class CommandReader : MonoBehaviour
                     slaveCam.enabled = true;
                     ////ai = aiControl.GetComponent<guardAI>();
                     camView.active = true;
-                   noSignalPlane.active = false;
+                    noSignalPlane.active = false;
                     noSignal = false;
                     ////navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
                 }
@@ -314,7 +318,7 @@ public class CommandReader : MonoBehaviour
                             camView.active = true;
                             noSignalPlane.active = false;
                             noSignal = false;
-                            stage = 1;
+                            //stage = -1;
 
                             username = words[1];
                             outputText = outputText.Insert(outputText.Length, "\nHacked into " + words[1] + "\n");
@@ -356,6 +360,18 @@ public class CommandReader : MonoBehaviour
                 outText.text = outputText;
             }
         }
+
+        //else if (stage == -1)
+        //{
+        //    if (words[0] == "help")
+        //    {
+        //        string hackCommand = "hack  hack an individual\n";
+
+        //        outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + tabKey + showNameCommand);
+        //        outText.text = outputText;
+        //    }
+
+        //}
 
         else if (stage == 0)
         {
