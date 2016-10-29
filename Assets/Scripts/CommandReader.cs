@@ -8,6 +8,7 @@ public class CommandReader : MonoBehaviour
 {
     private int index;  //index of list of gameobjects for erase()
     private int eraseStart = 0;
+    public GameObject endText;
     private List<GameObject> list = new List<GameObject>();
     public GameObject[] NPCs;
     public GameObject[] Cameras;
@@ -40,8 +41,9 @@ public class CommandReader : MonoBehaviour
     private guardAI ai;
 
     // Sound variables
-    public AudioSource laserAudio;
-    public AudioClip laserSound;
+    public AudioSource endAudio;
+    public AudioClip endSound;
+    public AudioClip overSound;
 
     // Use this for initialization
     void Start()
@@ -60,6 +62,9 @@ public class CommandReader : MonoBehaviour
 
         outputText = outputText.Insert(outputText.Length, "\nType HELP for instructions");
         outText.text = outputText;
+        endAudio = mainCam.GetComponent<AudioSource>();
+        endSound = (AudioClip)Resources.Load("Sounds/Tic");
+        overSound = (AudioClip)Resources.Load("Sounds/GameOver2");
     }
 
     // Update is called once per frame
@@ -68,7 +73,30 @@ public class CommandReader : MonoBehaviour
 
         if (eraseStart == 1)
         {
-            StartCoroutine("eraseAll");
+            if (index < list.Count)
+            {
+                if (list[index].name != "Player" && list[index] != null)
+                {
+                    if (list[index].GetComponent<MeshRenderer>())
+                    {
+                        list[index].GetComponent<MeshRenderer>().enabled = false;
+                    }
+                    //print(index + ": " + list[index].name);
+                    //Destroy(list[index]);
+                }
+
+                if (index%5==0)
+                {
+                    endAudio.pitch = Random.Range(1.0f -.1f, 1.0f +.1f);
+                    endAudio.PlayOneShot(endSound, .4f);
+                }
+
+                index++;
+            }
+            else
+            {
+                endText.active = true;
+            }
         }
 
         if (showingName == true)
@@ -77,6 +105,9 @@ public class CommandReader : MonoBehaviour
             {
                 for (int i = 0; i < NPCs.Length; i++)
                 {
+                    Renderer rend = NPCs[i].transform.GetChild(0).GetComponent<Renderer>();
+                    rend.material.shader = Shader.Find("Specular");
+                    rend.material.SetColor("_SpecColor", Color.black);
                     NPCs[i].transform.GetChild(4).gameObject.SetActive(false);
                     NPCs[i].transform.GetChild(5).gameObject.SetActive(false);
                 }
@@ -186,7 +217,7 @@ public class CommandReader : MonoBehaviour
 
     public void input(string rawInput)
     {
-        outputText = outputText.Insert(outputText.Length, username + "<" + rawInput + "\n");
+        outputText = outputText.Insert(outputText.Length, username + "\n<" + rawInput + "\n");
         outText.text = outputText;
         char[] delimiterChars = { ' ', '.' };
         string[] words = rawInput.ToLower().Split(delimiterChars);
@@ -210,6 +241,7 @@ public class CommandReader : MonoBehaviour
                 Cameras[i].transform.GetChild(0).gameObject.SetActive(true);
                 Cameras[i].transform.GetChild(1).gameObject.SetActive(true);
             }
+
             showingName = true;
             startTime = Time.time;
         }
@@ -549,7 +581,7 @@ public class CommandReader : MonoBehaviour
             if (words[0] == "help")
             {
                 string eraseCommand = "eraseall  Erase everything.\n";
-                outputText = outputText.Insert(outputText.Length, "\n\n" + eraseCommand + tabKey + showNameCommand);
+                outputText = outputText.Insert(outputText.Length, "\n\n" +  tabKey + showNameCommand + eraseCommand);
                 outText.text = outputText;
             }
 
@@ -557,7 +589,16 @@ public class CommandReader : MonoBehaviour
             {
                 foreach (GameObject gameObj in GameObject.FindObjectsOfType<GameObject>())
                 {
-                    list.Add(gameObj);
+                    if (Vector3.Distance(gameObj.transform.position, mainCam.transform.position) < 30)
+                    {
+                        list.Add(gameObj);
+                    }
+                    else if (gameObj.GetComponent<MeshRenderer>())
+                    {
+                        gameObj.GetComponent<MeshRenderer>().enabled = false;
+                    }
+
+
                 }
                 eraseStart = 1;
             }
@@ -710,32 +751,9 @@ public class CommandReader : MonoBehaviour
             stop();
         }
     }
-
-    private void erase()
+    
+    public void gameOverSound()
     {
-        foreach (GameObject gameObj in GameObject.FindObjectsOfType<GameObject>())
-        {
-            list.Add(gameObj);
-            //print(gameObj);
-        }
-        StartCoroutine("eraseAll");
-    }
-
-    IEnumerator eraseAll()
-    {
-        if (index < list.Count)
-        {
-            if (list[index].name != "Player" && list[index] != null)
-            {
-                if (list[index].GetComponent<MeshRenderer>())
-                {
-                    list[index].GetComponent<MeshRenderer>().enabled = false;
-                }
-                print(index + ": " + list[index].name);
-                //Destroy(list[index]);
-            }
-            index++;
-        }
-        yield return new WaitForSeconds(0.01f);
+        endAudio.PlayOneShot(overSound, .8f);
     }
 }
