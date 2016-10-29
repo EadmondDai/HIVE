@@ -6,7 +6,7 @@ public class nameScript : MonoBehaviour
     private TextMesh nameMesh;
     private Transform player;
     private float divider = 500;
-    private float thresh = 50;
+    private float thresh = 100;
     // Use this for initialization
     void Start ()
     {

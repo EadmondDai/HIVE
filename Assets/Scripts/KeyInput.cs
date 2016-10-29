@@ -13,6 +13,8 @@ public class KeyInput : MonoBehaviour
     public bool caps = false;
     public bool shift = false;
 
+    public float backStartTime;
+
     public string text;
 
     public string[] priorInput = { "Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ", "Ұ" };
@@ -405,7 +407,17 @@ public class KeyInput : MonoBehaviour
             float newY = currentY - down;
             Backspace.transform.localPosition = new Vector3(Backspace.transform.localPosition.x, newY, Backspace.transform.localPosition.z);
             text = text.Remove(text.Length - 1);
+            backStartTime = Time.time;
         }
+        if (Input.GetKey(KeyCode.Backspace))
+        {
+            if (Time.time - backStartTime > 0.05f)
+            {
+                backStartTime = Time.time;
+                text = text.Remove(text.Length - 1);
+            }
+        }
+
         else if (Input.GetKeyUp(KeyCode.Backspace))
         {
             Backspace.transform.localPosition = new Vector3(Backspace.transform.localPosition.x, 0, Backspace.transform.localPosition.z);

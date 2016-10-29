@@ -63,11 +63,8 @@ public class guardAI : MonoBehaviour
                 cmdReader.outputText = cmdReader.outputText.Insert(cmdReader.outputText.Length, "\nYou were spotted...\nYour drone has been taken from you.");
                 cmdReader.outText.text = cmdReader.outputText;
             }
-        }
-     
+        }  
     }
-
-    
 
     bool LOS(Transform target)
     {

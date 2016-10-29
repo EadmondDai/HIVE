@@ -30,6 +30,9 @@ public class CommandReader : MonoBehaviour
     private Vector3 back;
     private Vector3 left;
     private Vector3 right;
+    private Quaternion initRotation;
+
+    private guardAI ai;
 
     // Sound variables
     public AudioSource laserAudio;
@@ -132,6 +135,15 @@ public class CommandReader : MonoBehaviour
         {
             moveRight();
         }
+        else if (moveState == 12)
+        {
+            turnUp();
+        }
+        else if (moveState == 13)
+        {
+            turnDown();
+        }
+
     }
 
     public string getUsername()
@@ -172,6 +184,7 @@ public class CommandReader : MonoBehaviour
         string tabKey = "tab(key)  Switch view\n";
         //string raycastCommand = "raycast  Give info on what you're looking at\n";
         string showNameCommand = "showname  Show names of all visible objects\n";
+        //string lookCommand = "look  Look up and down\n";
 
 
         if (words[0] == "showname")
@@ -253,11 +266,17 @@ public class CommandReader : MonoBehaviour
                     aiControl = npc.GetComponent<AICharacterControl>();
                     slaveCam = aiControl.transform.GetChild(3).GetComponent<Camera>();
                     slaveCam.enabled = true;
+                    ai = aiControl.GetComponent<guardAI>();
+                    ai.enabled = false;
+                    aiControl.target = aiControl.transform;
+                    //navAgent.enabled = false;
+                    aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX;
+                     stop();
                     camView.active = true;
                     noSignalPlane.active = false;
                     noSignal = false;
                     navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
-                    aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+                    //aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
                 }
             }
 
@@ -269,44 +288,39 @@ public class CommandReader : MonoBehaviour
         }
 
         else if (stage == 0)
-            {
+        {
             if (words[0] == "help")
-                {
-                    string hackCommand = "hack  hack the person\n";
+            {
+                string hackCommand = "hack  hack an individual\n";
 
-                    outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + tabKey + showNameCommand);
+                outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + tabKey + showNameCommand);
+                outText.text = outputText;
+            }
+
+            else if (words[0] == "stop")
+            {
+                moveState = 5;
+            }
+
+            else if (words[0] == "turn")
+            {
+                if (words.Length == 1)
+                {
+                    outputText = outputText.Insert(outputText.Length, "\n\n" + "turn.left\n" + "turn.right\n" + "stop\n");
                     outText.text = outputText;
                 }
-
-                else if (words[0] == "stop")
+                else if (words.Length == 2)
                 {
-                    moveState = 5;
-                }
-
-                else if (words[0] == "turn")
-                {
-                    if (words.Length == 1)
+                    if (words[1] == "left")
                     {
-                        outputText = outputText.Insert(outputText.Length, "\n\n" + "turn.left\n" + "turn.right\n" + "stop\n");
-                        outText.text = outputText;
+                        moveState = 6;
+                        stop();
                     }
-                    else if (words.Length == 2)
+
+                    else if (words[1] == "right")
                     {
-                        if (words[1] == "left")
-                        {
-                            moveState = 6;
-                        }
-
-                        else if (words[1] == "right")
-                        {
-                            moveState = 7;
-                        }
-
-                        else
-                        {
-                            outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
-                            outText.text = outputText;
-                        }
+                        moveState = 7;
+                        stop();
                     }
 
                     else
@@ -323,21 +337,30 @@ public class CommandReader : MonoBehaviour
                 }
             }
 
-            else if (stage == 1)
+            else
             {
-                if (words[0] == "help")
-                {
-                    string moveCommand = "move  Move the person\n";
-                    string exitCommand = "exit  Exit from hacking\n";
-                    outputText = outputText.Insert(outputText.Length, "\n\n" + moveCommand + cameraCommand + exitCommand + tabKey + showNameCommand);
-                    outText.text = outputText;
-                }
+                outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
+                outText.text = outputText;
+            }
+        }
 
-                else if (words[0] == "exit")
-                {
-                    outputText = outputText.Insert(outputText.Length, "\nExit from hacking" + username + "\n");
-                    outText.text = outputText;
-                    moveState = 5;
+        else if (stage == 1)
+        {
+            if (words[0] == "help")
+            {
+                string moveCommand = "move  Move the person\n";
+                string turnCommand = "turn  Rotate the person\n";
+                string lookCommand = "look  Look up and down\n";
+                string exitCommand = "exit  Exit from hacking\n";
+                outputText = outputText.Insert(outputText.Length, "\n\n" + moveCommand + turnCommand + lookCommand + cameraCommand + exitCommand + tabKey + showNameCommand);
+                outText.text = outputText;
+            }
+
+            else if (words[0] == "exit")
+            {
+                outputText = outputText.Insert(outputText.Length, "\nExit from hacking" + username + "\n");
+                outText.text = outputText;
+                moveState = 5;
 
 
                 noSignal = true;
@@ -346,103 +369,64 @@ public class CommandReader : MonoBehaviour
                     camView.active = false;
                     noSignalPlane.active = true;
                 }
-                    username = "";
-                    stage = 0;
-                }
+                username = "";
+                stage = 0;
+            }
 
-                else if (words[0] == "stop")
+            else if (words[0] == "stop")
+            {
+                moveState = 5;
+            }
+
+            else if (words[0] == "move")
+            {
+                if (words.Length == 1)
                 {
-                    moveState = 5;
+                    outputText = outputText.Insert(outputText.Length, "\n\n" + "move.north\n" + "move.south\n" + "move.west\n" + "move.east\n" + "move.forward\n" + "stop\n");
+                    outText.text = outputText;
                 }
-
-                else if (words[0] == "move")
+                else if (words.Length == 2)
                 {
-                    if (words.Length == 1)
+                    if (words[1] == "north")
                     {
-                        outputText = outputText.Insert(outputText.Length, "\n\n" + "move.north\n" + "move.south\n" + "move.west\n" + "move.east\n" + "move.forward\n" + "stop\n");
-                        outText.text = outputText;
+                        moveState = 1;
                     }
-                    else if (words.Length == 2)
+
+                    else if (words[1] == "south")
                     {
-                        if (words[1] == "north")
-                        {
-                            moveState = 1;
-                        }
-
-                        else if (words[1] == "south")
-                        {
-                            moveState = 2;
-                        }
-
-                        else if (words[1] == "west")
-                        {
-                            moveState = 3;
-                        }
-
-                        else if (words[1] == "east")
-                        {
-                            moveState = 4;
-                        }
-
-                        else if (words[1] == "forward")
-                        {
-                            moveState = 8;
-                        }
-
-                        else if (words[1] == "back")
-                        {
-                            moveState = 9;
-                            back = -aiControl.transform.forward;
-                        }
-
-                        else if (words[1] == "left")
-                        {
-                            left = -aiControl.transform.right;
-                            moveState = 10;
-                        }
-                        else if (words[1] == "right")
-                        {
-                            right = aiControl.transform.right;
-                            moveState = 11;
-                        }
-
-                        else
-                        {
-                            outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
-                            outText.text = outputText;
-                        }
+                        moveState = 2;
                     }
-                    else
+
+                    else if (words[1] == "west")
                     {
-                        outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
-                        outText.text = outputText;
+                        moveState = 3;
                     }
-                }
 
-                else if (words[0] == "turn")
-                {
-                    if (words.Length == 1)
+                    else if (words[1] == "east")
                     {
-                        outputText = outputText.Insert(outputText.Length, "\n\n" + "turn.left\n" + "turn.right\n" + "stop\n");
-                        outText.text = outputText;
+                        moveState = 4;
                     }
-                    else if (words.Length == 2)
+
+                    else if (words[1] == "forward")
                     {
-                        if (words[1] == "left")
-                        {
-                            moveState = 6;
-                        }
+                        moveState = 8;
+                    }
 
-                        else if (words[1] == "right")
-                        {
-                            moveState = 7;
-                        }
+                    else if (words[1] == "back")
+                    {
+                        moveState = 9;
+                        back = -aiControl.transform.forward;
+                    }
 
-                        else
-                        {
-                            outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
-                            outText.text = outputText;
-                        }
+                    else if (words[1] == "left")
+                    {
+                        left = -aiControl.transform.right;
+                        moveState = 10;
+                    }
+                    else if (words[1] == "right")
+                    {
+                        right = aiControl.transform.right;
+                        moveState = 11;
                     }
 
                     else
@@ -451,6 +435,75 @@ public class CommandReader : MonoBehaviour
                         outText.text = outputText;
                     }
                 }
+                else
+                {
+                    outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
+                    outText.text = outputText;
+                }
+            }
+
+            else if (words[0] == "turn")
+            {
+                if (words.Length == 1)
+                {
+                    outputText = outputText.Insert(outputText.Length, "\n\n" + "turn.left\n" + "turn.right\n" + "stop\n");
+                    outText.text = outputText;
+                }
+                else if (words.Length == 2)
+                {
+                    if (words[1] == "left")
+                    {
+                        moveState = 6;
+                    }
+
+                    else if (words[1] == "right")
+                    {
+                        moveState = 7;
+                    }
+
+                    else
+                    {
+                        outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
+                        outText.text = outputText;
+                    }
+                }
+            }
+
+            else if (words[0] == "look")
+            {
+                if (words.Length == 1)
+                {
+                    outputText = outputText.Insert(outputText.Length, "\n\n" + "look.up\n" + "look.down\n" + "stop\n");
+                    outText.text = outputText;
+                }
+                else if (words.Length == 2)
+                {
+
+                    if (words[1] == "up")
+                    {
+                        moveState = 12;
+                        initRotation = aiControl.transform.rotation;
+                    }
+
+                    else if (words[1] == "down")
+                    {
+                        moveState = 13;
+                        initRotation = aiControl.transform.rotation;
+                    }
+
+                    else
+                    {
+                        outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
+                        outText.text = outputText;
+                    }
+                }
+
+                else
+                {
+                    outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
+                    outText.text = outputText;
+                }
+            }
             }
 
             else
@@ -459,7 +512,7 @@ public class CommandReader : MonoBehaviour
                 outText.text = outputText;
             }
 
-    }
+        }
 
 private void stop()
     {
@@ -548,5 +601,35 @@ private void stop()
         navAgent.enabled = true;
         aiTarget.transform.position = aiControl.transform.position + left * aiSpeed;
         aiControl.target = aiTarget.transform;
+    }
+    private void turnUp()
+    {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        if ((slaveCam.transform.rotation.x * 100) > -50)
+        {
+            slaveCam.transform.localRotation *= Quaternion.Euler(-aiTurnSpeed, 0, 0);
+        }
+        else
+        {
+            stop();
+        }
+
+    }
+
+    private void turnDown()
+    {
+        aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        // navAgent.enabled = false;
+        if (Quaternion.Angle(initRotation, slaveCam.transform.rotation) < 90)
+        {
+            //print(slaveCam.transform.rotation.x * 100);
+            //if (slaveCam.transform.rotation.x * 100 > 85) {
+            slaveCam.transform.localRotation *= Quaternion.Euler(aiTurnSpeed, 0, 0);
+            //slaveCam.GetComponent<CopyCam>().enabled = false;
+        }
+        else
+        {
+            stop();
+        }
     }
 }
