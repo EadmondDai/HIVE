@@ -143,7 +143,7 @@ public class KeyInput : MonoBehaviour
         if (Input.anyKeyDown)
         {
             typingAudio.pitch = Random.Range(1.0f - pitchRandomness, 1.0f + pitchRandomness);
-            typingAudio.PlayOneShot(typingSound);
+            typingAudio.PlayOneShot(typingSound, 0.7f);
         }
 
 
@@ -699,16 +699,27 @@ public class KeyInput : MonoBehaviour
         //-------------------------------------------------------------------
         if (Input.GetKeyDown(KeyCode.CapsLock))
         {
-            caps = true;
-            float currentY = Caps.transform.localPosition.y;
-            float newY = currentY - down;
-            Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x, newY, Caps.transform.localPosition.z);
+            if (caps == false)
+            {
+                shift = true;
+                caps = true;
+                float currentY = Caps.transform.localPosition.y;
+                float newY = currentY - down;
+                Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x, newY, Caps.transform.localPosition.z);
+            }
+
+            else
+            {
+                shift = false;
+                caps = false;
+                Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x, 0, Caps.transform.localPosition.z);
+            }
             //			Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x,newY,Caps.transform.localPosition.z);
         }
         else if (Input.GetKeyUp(KeyCode.CapsLock))
         {
-            caps = false;
-            Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x, 0, Caps.transform.localPosition.z);
+            //caps = false;
+            //Caps.transform.localPosition = new Vector3(Caps.transform.localPosition.x, 0, Caps.transform.localPosition.z);
         }
         //-------------------------------------------------------------------
         if (Input.GetKeyDown(KeyCode.Comma))
@@ -1213,12 +1224,12 @@ public class KeyInput : MonoBehaviour
             float currentY = ShiftL.transform.localPosition.y;
             float newY = currentY - down;
             ShiftL.transform.localPosition = new Vector3(ShiftL.transform.localPosition.x, newY, ShiftL.transform.localPosition.z);
-            caps = true;
+            shift = true;
         }
         else if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             ShiftL.transform.localPosition = new Vector3(ShiftL.transform.localPosition.x, 0, ShiftL.transform.localPosition.z);
-            caps = false;
+            shift = false;
         }
         //-------------------------------------------------------------------
         if (Input.GetKeyDown(KeyCode.RightShift))
@@ -1226,12 +1237,12 @@ public class KeyInput : MonoBehaviour
             float currentY = ShiftR.transform.localPosition.y;
             float newY = currentY - down;
             ShiftR.transform.localPosition = new Vector3(ShiftR.transform.localPosition.x, newY, ShiftR.transform.localPosition.z);
-            caps = true;
+            shift = true;
         }
-        else if (Input.GetKeyUp(KeyCode.LeftShift))
+        else if (Input.GetKeyUp(KeyCode.RightShift))
         {
             ShiftR.transform.localPosition = new Vector3(ShiftR.transform.localPosition.x, 0, ShiftR.transform.localPosition.z);
-            caps = false;
+            shift = false;
         }
         //-------------------------------------------------------------------
         if (Input.GetKeyDown(KeyCode.Clear) || Input.GetKeyDown(KeyCode.Numlock))

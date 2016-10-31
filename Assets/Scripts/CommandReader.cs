@@ -27,6 +27,8 @@ public class CommandReader : MonoBehaviour
     private float aiSpeed = 2.0f;
     private float startTime;
     private float aiTurnSpeed = 30f;
+    private float hackVol = 0.07f;
+    private float errorVol = 0.1f;
     public bool firstPerson = true;
     public bool showingName = false;
     public bool noSignal = true;
@@ -45,6 +47,8 @@ public class CommandReader : MonoBehaviour
     public AudioClip endSound;
     public AudioClip overSound;
     public AudioClip timerSound;
+    public AudioClip hackedSound;
+    public AudioClip errorSound;
 
     // Use this for initialization
     void Start()
@@ -67,6 +71,8 @@ public class CommandReader : MonoBehaviour
         endSound = (AudioClip)Resources.Load("Sounds/Tic");
         overSound = (AudioClip)Resources.Load("Sounds/GameOver2");
         timerSound = (AudioClip)Resources.Load("Sounds/Timer");
+        hackedSound = (AudioClip)Resources.Load("Sounds/Hacked");
+        errorSound = (AudioClip)Resources.Load("Sounds/Error");
     }
 
     // Update is called once per frame
@@ -90,7 +96,7 @@ public class CommandReader : MonoBehaviour
                 if (index%5==0)
                 {
                     endAudio.pitch = Random.Range(1.0f -.1f, 1.0f +.1f);
-                    endAudio.PlayOneShot(endSound, 0.2f);
+                    endAudio.PlayOneShot(endSound, 0.175f);
                 }
 
                 index++;
@@ -104,7 +110,7 @@ public class CommandReader : MonoBehaviour
         if (showingName == true)
         {
             print("showing");
-            if (Time.time - startTime >= 2.5f)
+            if (Time.time - startTime >= 3.5f)
             {
                 endAudio.pitch = 1.0f;
                 endAudio.Stop();
@@ -223,12 +229,12 @@ public class CommandReader : MonoBehaviour
         if (rawInput == "")
             rawInput = "stop";
 
-        outputText = outputText.Insert(outputText.Length, "\n" + username + "<" + rawInput + "\n");
+        outputText = outputText.Insert(outputText.Length, "\n\n" + username + "<" + rawInput + "\n");
         outText.text = outputText;
         char[] delimiterChars = { ' ', '.' };
         string[] words = rawInput.ToLower().Split(delimiterChars);
-        string cameraCommand = "turn  Rotate the player\n";
-        string tabKey = "tab(key)  Switch view\n";
+        string cameraCommand = "turn  Rotate the person\n";
+        string tabKey = "tab(key)  Turn on/off video-feed\n";
         //string raycastCommand = "raycast  Give info on what you're looking at\n";
         string showNameCommand = "showname  Overlay names of objects in view\n";
         //string lookCommand = "look  Look up and down\n";
@@ -236,8 +242,8 @@ public class CommandReader : MonoBehaviour
 
         if (words[0] == "showname")
         {
-            endAudio.PlayOneShot(timerSound, 0.7f);
-            endAudio.pitch = 1.5f;
+            endAudio.PlayOneShot(timerSound, 0.5f);
+           // endAudio.pitch = 1.5f;
             print("showname");
 
             for (int i = 0; i < NPCs.Length; i++)
@@ -271,10 +277,12 @@ public class CommandReader : MonoBehaviour
             {
                 GameObject npc;
 
-                if (words[1].ToLower() == "command")
+                if (words[1].ToLower() == "overseer")
                 {
-                    print("CMD");
+                    //print("CMD");
                     npc = Command;
+                    outputText = outputText.Insert(outputText.Length, "\nHacked into overseer \nType HELP to see new commands.");
+                        outText.text = outputText;
 
                     if (slaveCam != null)
                     {
@@ -294,6 +302,8 @@ public class CommandReader : MonoBehaviour
                     camView.active = true;
                     noSignalPlane.active = false;
                     noSignal = false;
+                    endAudio.pitch = .5f;
+                    endAudio.PlayOneShot(hackedSound, hackVol);
                     ////navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
                 }
 
@@ -332,6 +342,8 @@ public class CommandReader : MonoBehaviour
                             username = words[1];
                             outputText = outputText.Insert(outputText.Length, "\nHacked into " + words[1] + "\n");
                             outText.text = outputText;
+                            endAudio.pitch = 1.0f;
+                            endAudio.PlayOneShot(hackedSound, hackVol);
                         }
 
 
@@ -358,8 +370,15 @@ public class CommandReader : MonoBehaviour
                         noSignalPlane.active = false;
                         noSignal = false;
                         navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
+                        endAudio.pitch = 1.0f;
+                        endAudio.PlayOneShot(hackedSound, hackVol);
 
-                        outputText = outputText.Insert(outputText.Length, "\nHacked into " + words[1] + "\nType HELP to see new commands. \nHit TAB to turn off/on video-feed.");
+                        Renderer rend = npc.transform.GetChild(0).GetComponent<Renderer>();
+                        rend.material.shader = Shader.Find("Standard");
+                        Color color = new Color(0F, 0F,0F, 1F);
+                        rend.material.SetColor("_Color", color);
+
+                        outputText = outputText.Insert(outputText.Length, "\nHacked into " + words[1] + "\nHit TAB to turn off/on video-feed.\nType HELP to see new commands.");
                         outText.text = outputText;
                         //aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
                     }
@@ -370,6 +389,8 @@ public class CommandReader : MonoBehaviour
             {
                 outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                 outText.text = outputText;
+                endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
             }
         }
 
@@ -379,8 +400,16 @@ public class CommandReader : MonoBehaviour
             {
                 string hackCommand = "hack  Hack an individual\n";
 
-                outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + tabKey + showNameCommand);
+                outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + showNameCommand + tabKey);
                 outText.text = outputText;
+            }
+
+             else
+            {
+                outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
+                outText.text = outputText;
+                endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
             }
 
         }
@@ -391,7 +420,7 @@ public class CommandReader : MonoBehaviour
             {
                 string hackCommand = "hack  Hack an individual\n";
 
-                outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + tabKey + showNameCommand);
+                outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + showNameCommand + tabKey);
                 outText.text = outputText;
             }
 
@@ -425,6 +454,8 @@ public class CommandReader : MonoBehaviour
                     {
                         outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                         outText.text = outputText;
+                        endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
                     }
                 }
 
@@ -432,6 +463,8 @@ public class CommandReader : MonoBehaviour
                 {
                     outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                     outText.text = outputText;
+                    endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
                 }
             }
 
@@ -439,6 +472,8 @@ public class CommandReader : MonoBehaviour
             {
                 outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                 outText.text = outputText;
+                endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
             }
         }
 
@@ -450,7 +485,7 @@ public class CommandReader : MonoBehaviour
                 string turnCommand = "turn  Rotate the person\n";
                 string lookCommand = "look  Look up and down\n";
                 string exitCommand = "exit  Exit from hacking\n";
-                outputText = outputText.Insert(outputText.Length, "\n\n" + moveCommand + turnCommand + lookCommand + cameraCommand + exitCommand + tabKey + showNameCommand);
+                outputText = outputText.Insert(outputText.Length, "\n\n" + moveCommand + turnCommand + lookCommand + cameraCommand + exitCommand + showNameCommand + tabKey);
                 outText.text = outputText;
             }
 
@@ -480,7 +515,7 @@ public class CommandReader : MonoBehaviour
             {
                 if (words.Length == 1)
                 {
-                    outputText = outputText.Insert(outputText.Length, "\n\n" + "move.north\n" + "move.south\n" + "move.west\n" + "move.east\n" + "move.forward\n" + "stop\n");
+                    outputText = outputText.Insert(outputText.Length, "\n\n" + "move.forward\n" + "move.back\n" + "move.left\n" + "move.right\n" + "stop\n");
                     outText.text = outputText;
                 }
                 else if (words.Length == 2)
@@ -531,12 +566,16 @@ public class CommandReader : MonoBehaviour
                     {
                         outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                         outText.text = outputText;
+                        endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
                     }
                 }
                 else
                 {
                     outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                     outText.text = outputText;
+                    endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
                 }
             }
 
@@ -563,6 +602,8 @@ public class CommandReader : MonoBehaviour
                     {
                         outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                         outText.text = outputText;
+                        endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
                     }
                 }
             }
@@ -593,6 +634,8 @@ public class CommandReader : MonoBehaviour
                     {
                         outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                         outText.text = outputText;
+                        endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
                     }
                 }
 
@@ -600,7 +643,17 @@ public class CommandReader : MonoBehaviour
                 {
                     outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                     outText.text = outputText;
+                    endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
                 }
+            }
+
+            else
+            {
+                outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
+                outText.text = outputText;
+                endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
             }
             }
 
@@ -617,7 +670,7 @@ public class CommandReader : MonoBehaviour
             {
                 foreach (GameObject gameObj in GameObject.FindObjectsOfType<GameObject>())
                 {
-                    if (Vector3.Distance(gameObj.transform.position, mainCam.transform.position) < 30)
+                    if (Vector3.Distance(gameObj.transform.position, mainCam.transform.position) < 45)
                     {
                         list.Add(gameObj);
                     }
@@ -636,6 +689,8 @@ public class CommandReader : MonoBehaviour
                 print("UHOH");
                 outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                 outText.text = outputText;
+                endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
             }
         }
 
@@ -643,6 +698,8 @@ public class CommandReader : MonoBehaviour
             {
                 outputText = outputText.Insert(outputText.Length, "\nCommand not recognized.\n");
                 outText.text = outputText;
+                endAudio.pitch = 1.0f;
+                endAudio.PlayOneShot(errorSound, errorVol);
             }
 
         }
@@ -782,6 +839,7 @@ public class CommandReader : MonoBehaviour
     
     public void gameOverSound()
     {
+        endAudio.pitch = 1.0f;
         endAudio.PlayOneShot(overSound, .1f);
     }
 }

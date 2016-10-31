@@ -5,9 +5,11 @@ public class Win : MonoBehaviour
 {
     private CommandReader cmd;
     public int index;
-    private string[] tutorials = { "----------------\n-- MSG FROM WH1TER0SE:\nTread lightly,\nthe guards can spot an imposter.", "MSG FROM WH1TER0SE:\nFun, isn't it?\nDon't forget about your look command..." , "MSG FROM WH1TER0SE:\nNice work.\nNow the moment we've been waiting for... " };
+    private string[] tutorials = { "\n\n-MSG FROM WH1TER0SE:\nTread lightly,\nthe guards can spot an imposter.", "\n\n-MSG FROM WH1TER0SE:\nFun, isn't it?\nDon't forget about your look command..." , "\n\n-MSG FROM WH1TER0SE:\nNice work.\nNow the moment we've been waiting for... " };
     private AudioSource audioSource;
     private AudioClip gameSound;
+
+    private float startTime;
 
 	// Use this for initialization
 	void Start ()
@@ -31,9 +33,11 @@ public class Win : MonoBehaviour
             {
                 if (collider.gameObject.transform.GetChild(3) == cmd.slaveCam.transform)
                 {
-                        audioSource.PlayOneShot(gameSound, 0.4f);
-                        cmd.outputText = cmd.outputText.Insert(cmd.outputText.Length, "\n" + tutorials[index] );
+                        audioSource.pitch = 1.0f;
+                        audioSource.PlayOneShot(gameSound, 0.05f);
+                        cmd.outputText = cmd.outputText.Insert(cmd.outputText.Length, "\n<color=\"#00FFA8\">" + tutorials[index] + "</color>" );
                         cmd.outText.text = cmd.outputText;
+                        startTime = Time.time;
 
                     Destroy(gameObject);
                 }
