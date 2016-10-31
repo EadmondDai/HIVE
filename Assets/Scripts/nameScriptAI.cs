@@ -7,7 +7,7 @@ public class nameScriptAI : MonoBehaviour
     private Transform player;
     private CommandReader cmd;
     private float divider = 300;
-    private float thresh = 50;
+    private float thresh = 70;
     // Use this for initialization
     void Start ()
     {

@@ -16,6 +16,7 @@ public class guardAI : MonoBehaviour
     private CommandReader cmdReader;
     public bool lost = false;
     public float startTime = 0;
+    public bool stationary = false;
 
 
     // Use this for initialization
@@ -36,13 +37,18 @@ public class guardAI : MonoBehaviour
     {
         if (lost == true)
         {
-            if (Time.time-startTime > 2)
+            if (Time.time-startTime > 2.5)
             {
                 Application.LoadLevel(Application.loadedLevel);
             }
         }
 
-        if (Vector3.Distance(aiCharControl.transform.position, aiCharControl.target.position) < minDist)
+        if (stationary == true)
+        {
+            aiCharControl.target = aiCharControl.transform;
+        }
+
+        if (Vector3.Distance(aiCharControl.transform.position, aiCharControl.target.position) < minDist && stationary != true)
         {
            if (i < (targets.Length - 1))
            {
@@ -86,7 +92,7 @@ public class guardAI : MonoBehaviour
             return true;
         }
 
-       // print(Vector3.Angle(target.position - transform.position, transform.forward) + " : " +  fov + " | " + Physics.Linecast(transform.position, target.position, out hit) + " | " + hit.collider.transform + " : " + target);
+       print(Vector3.Angle(target.position - transform.position, transform.forward) + " : " +  fov + " | " + Physics.Linecast(transform.position, target.position, out hit) + " | " + hit.collider.transform + " : " + target);
         return false;
     }
 

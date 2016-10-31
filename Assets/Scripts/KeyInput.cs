@@ -14,6 +14,7 @@ public class KeyInput : MonoBehaviour
     public bool shift = false;
 
     public float backStartTime;
+    public bool backStart = false;
 
     public string text;
 
@@ -411,16 +412,30 @@ public class KeyInput : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.Backspace))
         {
-            if (Time.time - backStartTime > 0.1f)
+            if (Time.time - backStartTime > 0.08f)
             {
-                backStartTime = Time.time;
-                text = text.Remove(text.Length - 1);
+                if (backStart == false)
+                {
+                    if (Time.time - backStartTime > 0.5f)
+                    {
+                        backStartTime = Time.time;
+                        text = text.Remove(text.Length - 1);
+                        backStart = true;
+                    }
+                }
+
+                else
+                {
+                    backStartTime = Time.time;
+                    text = text.Remove(text.Length - 1);
+                }
             }
         }
 
         else if (Input.GetKeyUp(KeyCode.Backspace))
         {
             Backspace.transform.localPosition = new Vector3(Backspace.transform.localPosition.x, 0, Backspace.transform.localPosition.z);
+            backStart = false;
         }
         //-------------------------------------------------------------------
         if (Input.GetKeyDown(KeyCode.Tab))

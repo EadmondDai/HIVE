@@ -26,7 +26,7 @@ public class CommandReader : MonoBehaviour
     public int moveState = 0;  // Flag controlling move to left, right, forward, back by 1, 2, 3, 4
     private float aiSpeed = 2.0f;
     private float startTime;
-    private float aiTurnSpeed = 0.5f;
+    private float aiTurnSpeed = 30f;
     public bool firstPerson = true;
     public bool showingName = false;
     public bool noSignal = true;
@@ -44,6 +44,7 @@ public class CommandReader : MonoBehaviour
     public AudioSource endAudio;
     public AudioClip endSound;
     public AudioClip overSound;
+    public AudioClip timerSound;
 
     // Use this for initialization
     void Start()
@@ -65,6 +66,7 @@ public class CommandReader : MonoBehaviour
         endAudio = mainCam.GetComponent<AudioSource>();
         endSound = (AudioClip)Resources.Load("Sounds/Tic");
         overSound = (AudioClip)Resources.Load("Sounds/GameOver2");
+        timerSound = (AudioClip)Resources.Load("Sounds/Timer");
     }
 
     // Update is called once per frame
@@ -88,7 +90,7 @@ public class CommandReader : MonoBehaviour
                 if (index%5==0)
                 {
                     endAudio.pitch = Random.Range(1.0f -.1f, 1.0f +.1f);
-                    endAudio.PlayOneShot(endSound, .4f);
+                    endAudio.PlayOneShot(endSound, 0.2f);
                 }
 
                 index++;
@@ -104,6 +106,8 @@ public class CommandReader : MonoBehaviour
             print("showing");
             if (Time.time - startTime >= 2.5f)
             {
+                endAudio.pitch = 1.0f;
+                endAudio.Stop();
                 for (int i = 0; i < NPCs.Length; i++)
                 {
                     print(NPCs[i]);
@@ -216,19 +220,24 @@ public class CommandReader : MonoBehaviour
 
     public void input(string rawInput)
     {
-        outputText = outputText.Insert(outputText.Length, username + "\n<" + rawInput + "\n");
+        if (rawInput == "")
+            rawInput = "stop";
+
+        outputText = outputText.Insert(outputText.Length, "\n" + username + "<" + rawInput + "\n");
         outText.text = outputText;
         char[] delimiterChars = { ' ', '.' };
         string[] words = rawInput.ToLower().Split(delimiterChars);
         string cameraCommand = "turn  Rotate the player\n";
         string tabKey = "tab(key)  Switch view\n";
         //string raycastCommand = "raycast  Give info on what you're looking at\n";
-        string showNameCommand = "showname  Show names of all visible objects\n";
+        string showNameCommand = "showname  Overlay names of objects in view\n";
         //string lookCommand = "look  Look up and down\n";
 
 
         if (words[0] == "showname")
         {
+            endAudio.PlayOneShot(timerSound, 0.7f);
+            endAudio.pitch = 1.5f;
             print("showname");
 
             for (int i = 0; i < NPCs.Length; i++)
@@ -318,7 +327,7 @@ public class CommandReader : MonoBehaviour
                             camView.active = true;
                             noSignalPlane.active = false;
                             noSignal = false;
-                            //stage = -1;
+                            stage = -1;
 
                             username = words[1];
                             outputText = outputText.Insert(outputText.Length, "\nHacked into " + words[1] + "\n");
@@ -349,6 +358,9 @@ public class CommandReader : MonoBehaviour
                         noSignalPlane.active = false;
                         noSignal = false;
                         navAgent = aiControl.transform.GetComponent<NavMeshAgent>();
+
+                        outputText = outputText.Insert(outputText.Length, "\nHacked into " + words[1] + "\nType HELP to see new commands. \nHit TAB to turn off/on video-feed.");
+                        outText.text = outputText;
                         //aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
                     }
                 }
@@ -361,23 +373,23 @@ public class CommandReader : MonoBehaviour
             }
         }
 
-        //else if (stage == -1)
-        //{
-        //    if (words[0] == "help")
-        //    {
-        //        string hackCommand = "hack  hack an individual\n";
+        else if (stage == -1)
+        {
+            if (words[0] == "help")
+            {
+                string hackCommand = "hack  Hack an individual\n";
 
-        //        outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + tabKey + showNameCommand);
-        //        outText.text = outputText;
-        //    }
+                outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + tabKey + showNameCommand);
+                outText.text = outputText;
+            }
 
-        //}
+        }
 
         else if (stage == 0)
         {
             if (words[0] == "help")
             {
-                string hackCommand = "hack  hack an individual\n";
+                string hackCommand = "hack  Hack an individual\n";
 
                 outputText = outputText.Insert(outputText.Length, "\n\n" + hackCommand + tabKey + showNameCommand);
                 outText.text = outputText;
@@ -688,7 +700,7 @@ public class CommandReader : MonoBehaviour
         stop();
         aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY;
         //navAgent.enabled = false;
-        aiControl.transform.Rotate(0, -aiTurnSpeed, 0);
+        aiControl.transform.Rotate(0, -aiTurnSpeed * Time.deltaTime, 0);
     }
 
     private void turnRight()
@@ -696,7 +708,7 @@ public class CommandReader : MonoBehaviour
         stop();
         aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY;
         // navAgent.enabled = false;
-        aiControl.transform.Rotate(0, aiTurnSpeed, 0);
+        aiControl.transform.Rotate(0, aiTurnSpeed * Time.deltaTime, 0);
     }
 
     private void moveForward()
@@ -741,7 +753,7 @@ public class CommandReader : MonoBehaviour
        // aiControl.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ ;
         if ((slaveCam.transform.localRotation.x * 100) > -50)
         {
-            slaveCam.transform.localRotation *= Quaternion.Euler(-aiTurnSpeed, 0, 0);
+            slaveCam.transform.localRotation *= Quaternion.Euler(-aiTurnSpeed * Time.deltaTime, 0, 0);
         }
         else
         {
@@ -759,7 +771,7 @@ public class CommandReader : MonoBehaviour
         {
             //print(slaveCam.transform.rotation.x * 100);
             //if (slaveCam.transform.rotation.x * 100 > 85) {
-            slaveCam.transform.localRotation *= Quaternion.Euler(aiTurnSpeed, 0, 0);
+            slaveCam.transform.localRotation *= Quaternion.Euler(aiTurnSpeed * Time.deltaTime, 0, 0);
             //slaveCam.GetComponent<CopyCam>().enabled = false;
         }
         else
@@ -770,6 +782,6 @@ public class CommandReader : MonoBehaviour
     
     public void gameOverSound()
     {
-        endAudio.PlayOneShot(overSound, .8f);
+        endAudio.PlayOneShot(overSound, .1f);
     }
 }
